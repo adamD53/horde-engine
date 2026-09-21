@@ -15,6 +15,8 @@ enum class PlayerState
     WalkLeft
 }; // TODO: Add idle animation in all directions
 
+class Terrain;
+
 class Player : public Entity
 {
 public:
@@ -22,6 +24,8 @@ public:
     ~Player() = default;
 
     auto OnUpdate(float dt) -> void override;
+    void SetTerrain(const Terrain& terrain) { m_Terrain = &terrain; }
+    auto GetFeetBounds() const -> sf::FloatRect;
     auto GetPos() -> sf::Vector2f const override;
     auto GetHealthPoints() -> float&;
     auto GetBounds() -> sf::FloatRect const override;
@@ -38,6 +42,7 @@ private:
     const uint32_t m_TexStride = 64;
     const float m_Speed = 150.0f;
     float m_HealthPoints;
+    const Terrain* m_Terrain = nullptr;
 
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

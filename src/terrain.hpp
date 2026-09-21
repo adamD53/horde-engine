@@ -5,6 +5,7 @@
 #include "tinyxml2.h"
 
 #include "entity.hpp"
+#include "collision_grid.hpp"
 
 #include <unordered_map>
 #include <vector>
@@ -17,6 +18,7 @@ struct Tileset
     int tileW;
     int tileH;
     int columns;
+    std::vector<std::vector<sf::FloatRect>> collision;
 };
 
 struct Layer
@@ -35,6 +37,7 @@ public:
 public:
     void Load(const std::string& tmx_file, std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures);
     auto GetStaticEntities() -> std::vector<Entity*> const;
+    auto ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -> sf::Vector2f;
 
 private:
     std::vector<Tileset> m_Tilesets;
@@ -45,6 +48,8 @@ private:
 
     uint32_t m_MapWidth = 0;
     uint32_t m_MapHeight = 0;
+    sf::Vector2f m_TileSize;
+    CollisionGrid m_Collision;
 
 private:
     auto LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*;

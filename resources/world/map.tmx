@@ -1,22 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="80" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="1">
  <tileset firstgid="1" name="Water" tilewidth="16" tileheight="16" tilecount="30" columns="6">
-  <image source="../../../../../../Pixel Crawler - Free Pack 2.0.4/Pixel Crawler - Free Pack/Environment/Tilesets/Water.aseprite" width="96" height="80"/>
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <image source="Water_tiles.png" width="96" height="80"/>
  </tileset>
  <tileset firstgid="31" name="Floors_Tiles" tilewidth="16" tileheight="16" tilecount="650" columns="25">
-  <image source="../../../../../../Pixel Crawler - Free Pack 2.0.4/Pixel Crawler - Free Pack/Environment/Tilesets/Floors_Tiles.aseprite" width="400" height="416"/>
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <image source="Floors_Tiles.png" width="400" height="416"/>
+  <tile id="276">
+   <properties><property name="solid" type="bool" value="false"/></properties>
+  </tile>
+  <tile id="277">
+   <properties><property name="solid" type="bool" value="false"/></properties>
+  </tile>
+  <tile id="278">
+   <properties><property name="solid" type="bool" value="false"/></properties>
+  </tile>
  </tileset>
  <tileset firstgid="681" name="Trees" tilewidth="16" tileheight="16" tilecount="90" columns="9">
-  <image source="../../../../../../Pixel Crawler - Free Pack 2.0.4/Pixel Crawler - Free Pack/Environment/Props/Static/Trees/Model_02/Size_03.png" width="144" height="160"/>
+  <image source="Trees.png" width="144" height="160"/>
+  <tile id="37">
+   <objectgroup>
+    <object id="1" x="2" y="2" width="10" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="40">
+   <objectgroup>
+    <object id="1" x="2" y="2" width="10" height="12"/>
+   </objectgroup>
+  </tile>
+  <tile id="43">
+   <objectgroup>
+    <object id="1" x="5" y="0" width="6" height="16"/>
+   </objectgroup>
+  </tile>
+  <tile id="79">
+   <objectgroup>
+    <object id="1" x="5" y="7" width="6" height="9"/>
+   </objectgroup>
+  </tile>
+  <tile id="88">
+   <objectgroup>
+    <object id="1" x="5" y="7" width="6" height="9"/>
+   </objectgroup>
+  </tile>
+  <tile id="82">
+   <objectgroup>
+    <object id="1" x="2" y="6" width="10" height="10"/>
+   </objectgroup>
+  </tile>
+  <tile id="85">
+   <objectgroup>
+    <object id="1" x="2" y="6" width="10" height="10"/>
+   </objectgroup>
+  </tile>
  </tileset>
  <tileset firstgid="771" name="Props" tilewidth="16" tileheight="16" tilecount="625" columns="25">
-  <image source="../../../../../../Pixel Crawler - Free Pack 2.0.4/Pixel Crawler - Free Pack/Environment/Structures/Buildings/Props.aseprite" width="400" height="400"/>
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <image source="Props.png" width="400" height="400"/>
  </tileset>
  <tileset firstgid="1396" name="Roofs" tilewidth="16" tileheight="16" tilecount="625" columns="25">
-  <image source="../../../../../../Pixel Crawler - Free Pack 2.0.4/Pixel Crawler - Free Pack/Environment/Structures/Buildings/Roofs.aseprite" width="400" height="400"/>
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <image source="Roofs.png" width="400" height="400"/>
  </tileset>
  <tileset firstgid="2021" name="Walls" tilewidth="16" tileheight="16" tilecount="2100" columns="42">
-  <image source="../../../../../../Pixel Crawler - Free Pack 2.0.4/Pixel Crawler - Free Pack/Environment/Structures/Buildings/Walls.aseprite" width="672" height="800"/>
+  <properties>
+   <property name="solid" type="bool" value="true"/>
+  </properties>
+  <image source="Walls.png" width="672" height="800"/>
  </tileset>
  <layer id="1" name="Tile Layer 1" width="80" height="80">
   <data encoding="csv">

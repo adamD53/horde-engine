@@ -4,6 +4,21 @@
 #include <memory>
 #include <print>
 #include <vector>
+#include <sstream>
+#include <stdexcept>
+
+namespace
+{
+bool SolidProperty(tinyxml2::XMLElement* element, bool fallback)
+{
+    if (auto* properties = element->FirstChildElement("properties"))
+        for (auto* property = properties->FirstChildElement("property"); property;
+             property = property->NextSiblingElement("property"))
+            if (std::string(property->Attribute("name") ? property->Attribute("name") : "") == "solid")
+                return property->BoolAttribute("value", fallback);
+    return fallback;
+}
+}
 
 Terrain::~Terrain()
 {
@@ -29,6 +44,8 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
         layer.data = GetDataFromLayer(layerNode);
         layer.name = layerNode->FindAttribute("name")->Value();
         std::vector<uint32_t> gids = ParseCSV(layer.data);
+        if (gids.size() != static_cast<size_t>(m_MapWidth) * m_MapHeight)
+            throw std::runtime_error("Tile layer has an incorrect number of cells: " + layer.name);
 
         std::vector<size_t> counts(m_Tilesets.size(), 0);
         for (const auto gid : gids)
@@ -82,7 +99,7 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
             {
                 const uint32_t gid = gids[y * m_MapWidth + x];
                 if (!gid || gid >= m_GidToTileset.size()) continue;
-                const uint32_t tsIndex = m_GidToTileset[gid];
+                const int tsIndex = m_GidToTileset[gid];
                 if (tsIndex < 0) continue;
 
                 const Tileset& ts = m_Tilesets[tsIndex];
@@ -90,8 +107,11 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
                 const uint32_t tu = localId % ts.columns;
                 const uint32_t tv = localId / ts.columns;
 
-                auto px = (float)(x * ts.tileW);
-                auto py = (float)(y * ts.tileH);
+                for (const auto& bounds : ts.collision[localId])
+                    m_Collision.Add(x, y, bounds);
+
+                auto px = x * m_TileSize.x;
+                auto py = y * m_TileSize.y;
                 auto tx = (float)(tu * ts.tileW);
                 auto ty = (float)(tv * ts.tileH);
 
@@ -121,6 +141,7 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
 
 auto Terrain::ParseCSV(tinyxml2::XMLElement* layer_data) -> std::vector<uint32_t>
 {
+    if (!layer_data) throw std::runtime_error("Terrain requires CSV tile layer data");
     std::vector<uint32_t> gids;
     gids.reserve(m_MapWidth * m_MapHeight);
     {
@@ -174,10 +195,35 @@ auto Terrain::ParseTilesets(
         Tileset info;
         info.firstGid = first;
         info.lastGid = last;
-        info.tex = textures[tileName].get();
+        if (tileCount <= 0 || columns <= 0 || tileWidth != globalTW || tileHeight != globalTH)
+            throw std::runtime_error("Terrain requires atlas tiles matching the map cell size");
+        info.tex = textures.at(tileName).get();
+        if (!info.tex) throw std::runtime_error("Missing tileset texture");
         info.tileW = tileWidth;
         info.tileH = tileHeight;
         info.columns = columns;
+        const sf::FloatRect fullTile({0.f, 0.f}, m_TileSize);
+        const bool solid = SolidProperty(ts, false);
+        info.collision.resize(tileCount, solid ? std::vector<sf::FloatRect>{fullTile} : std::vector<sf::FloatRect>{});
+        for (auto* tile = ts->FirstChildElement("tile"); tile; tile = tile->NextSiblingElement("tile"))
+        {
+            auto& shapes = info.collision.at(tile->UnsignedAttribute("id"));
+            shapes = SolidProperty(tile, solid) ? std::vector<sf::FloatRect>{fullTile} : std::vector<sf::FloatRect>{};
+            if (auto* group = tile->FirstChildElement("objectgroup"))
+            {
+                shapes.clear();
+                for (auto* object = group->FirstChildElement("object"); object; object = object->NextSiblingElement("object"))
+                {
+                    sf::FloatRect shape({object->FloatAttribute("x"), object->FloatAttribute("y")},
+                                        {object->FloatAttribute("width"), object->FloatAttribute("height")});
+                    if (object->FirstChildElement() || object->FloatAttribute("rotation") != 0 ||
+                        shape.size.x <= 0 || shape.size.y <= 0 || shape.position.x < 0 || shape.position.y < 0 ||
+                        shape.position.x + shape.size.x > m_TileSize.x || shape.position.y + shape.size.y > m_TileSize.y)
+                        throw std::runtime_error("Tile collision must be an unrotated rectangle inside its cell");
+                    shapes.push_back(shape);
+                }
+            }
+        }
         m_Tilesets.push_back(info);
     }
 
@@ -187,6 +233,7 @@ auto Terrain::ParseTilesets(
 auto Terrain::LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*
 {
     m_Tilesets.clear();
+    m_Layers.clear();
     m_GidToTileset.clear();
     m_Document.Clear();
 
@@ -210,9 +257,12 @@ auto Terrain::Load(const std::string& tmx_file, std::unordered_map<std::string, 
     -> void
 {
     tinyxml2::XMLElement* map = LoadXML(tmx_file);
+    if (!map) throw std::runtime_error("Could not load terrain: " + tmx_file);
 
     m_MapWidth = map->IntAttribute("width");
     m_MapHeight = map->IntAttribute("height");
+    m_TileSize = {map->FloatAttribute("tilewidth"), map->FloatAttribute("tileheight")};
+    m_Collision.Reset(m_MapWidth, m_MapHeight, m_TileSize);
 
     ParseTilesets(map, textures);
     BuildGridMap();
@@ -229,6 +279,11 @@ auto Terrain::GetDataFromLayer(tinyxml2::XMLElement* layer_element) -> tinyxml2:
     if (enc && std::string(enc) != "csv") return nullptr;
 
     return data;
+}
+
+auto Terrain::ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -> sf::Vector2f
+{
+    return m_Collision.Move(feet, movement);
 }
 
 auto Terrain::GetStaticEntities() -> std::vector<Entity*> const

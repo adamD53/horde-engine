@@ -1,19 +1,21 @@
 #include "player.hpp"
 #include "SFML/Graphics/Rect.hpp"
 #include "global_config.hpp"
+#include "terrain.hpp"
 
 Player::Player()
     : m_HealthPoints(100.f)
 {
-    m_AnimationTextures.emplace(std::make_pair("walk_down", sf::Texture("resources/player/Walk_Down-Sheet.png")));
-    m_AnimationTextures.emplace(std::make_pair("walk_up", sf::Texture("resources/player/Walk_Up-Sheet.png")));
-    m_AnimationTextures.emplace(std::make_pair("walk_side", sf::Texture("resources/player/Walk_Side-Sheet.png")));
-    m_AnimationTextures.emplace(std::make_pair("idle_down", sf::Texture("resources/player/Idle_Down-Sheet.png")));
+    m_AnimationTextures.emplace(std::make_pair("walk_down", sf::Texture(RESOURCES_PATH "player/Walk_Down-Sheet.png")));
+    m_AnimationTextures.emplace(std::make_pair("walk_up", sf::Texture(RESOURCES_PATH "player/Walk_Up-Sheet.png")));
+    m_AnimationTextures.emplace(std::make_pair("walk_side", sf::Texture(RESOURCES_PATH "player/Walk_Side-Sheet.png")));
+    m_AnimationTextures.emplace(std::make_pair("idle_down", sf::Texture(RESOURCES_PATH "player/Idle_Down-Sheet.png")));
 
     m_Sprite = std::make_unique<sf::Sprite>(m_AnimationTextures["idle_down"]);
-    auto [width, height] = m_Sprite->getTextureRect().size;
+    const auto textureHeight = m_Sprite->getTextureRect().size.y;
     m_Sprite->setTextureRect(sf::IntRect({16, 16}, {32, 32}));
-    m_Sprite->setOrigin({16 / 2.f, height / 2.f});
+    // Measured pivot keeps the artwork aligned when flipping horizontally.
+    m_Sprite->setOrigin({16 / 2.f, textureHeight / 2.f});
     m_Sprite->setPosition(config::playerInitialPosition);
 
     m_Animation = std::make_unique<Animation>(0.2f);
@@ -22,6 +24,12 @@ Player::Player()
 auto Player::GetBounds() -> sf::FloatRect const
 {
     return m_Sprite->getGlobalBounds();
+}
+
+auto Player::GetFeetBounds() const -> sf::FloatRect
+{
+    // Anchored to the feet, independent of animation frames and facing direction.
+    return {m_Sprite->getPosition() + sf::Vector2f(-5.f, -6.f), {10.f, 6.f}};
 }
 
 auto Player::GetPos() -> sf::Vector2f const
@@ -103,7 +111,9 @@ auto Player::OnUpdate(float dt) -> void
     m_Sprite->setTextureRect(
         sf::IntRect({frameX, animationRow}, {config::playerTextureWidth, config::playerTextureHeight}));
 
-    m_Sprite->move((direction.length() <= 1 ? direction : direction.normalized()) * m_Speed * dt);
+    auto movement = (direction.length() <= 1 ? direction : direction.normalized()) * m_Speed * dt;
+    if (m_Terrain) movement = m_Terrain->ResolveMovement(GetFeetBounds(), movement);
+    m_Sprite->move(movement);
     m_Sprite->setScale({(m_FacingRight ? 1.0f : -1.0f), 1.0f});
 }
 

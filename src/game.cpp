@@ -16,27 +16,22 @@ Game::Game(const GameSpecification &spec) {
 
   m_Tilesets.emplace(std::pair(
       "Water",
-      std::make_unique<sf::Texture>("resources/world/Water_Tiles.png")));
+      std::make_unique<sf::Texture>(RESOURCES_PATH "world/Water_tiles.png")));
   m_Tilesets.emplace(std::pair(
       "Floors_Tiles",
-      std::make_unique<sf::Texture>("resources/world/Floors_Tiles.png")));
+      std::make_unique<sf::Texture>(RESOURCES_PATH "world/Floors_Tiles.png")));
   m_Tilesets.emplace(std::pair(
-      "Trees", std::make_unique<sf::Texture>("resources/world/Trees.png")));
+      "Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png")));
   m_Tilesets.emplace(std::pair(
-      "Props", std::make_unique<sf::Texture>("resources/world/Props.png")));
+      "Props", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Props.png")));
   m_Tilesets.emplace(std::pair(
-      "Roofs", std::make_unique<sf::Texture>("resources/world/Roofs.png")));
+      "Roofs", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Roofs.png")));
   m_Tilesets.emplace(std::pair(
-      "Walls", std::make_unique<sf::Texture>("resources/world/Walls.png")));
-  m_Terrain.Load("resources/world/map.tmx", m_Tilesets);
+      "Walls", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Walls.png")));
+  m_Terrain.Load(RESOURCES_PATH "world/map.tmx", m_Tilesets);
+  m_Player.SetTerrain(m_Terrain);
 
   m_PlayerGUI = std::make_unique<PlayerGUI>(&m_Window);
-
-  m_Entities.emplace_back(std::make_unique<Enemy>(&m_Player));
-  m_Entities.emplace_back(std::make_unique<Enemy>(&m_Player));
-  m_Entities.emplace_back(std::make_unique<Enemy>(&m_Player));
-  m_Entities.emplace_back(std::make_unique<Enemy>(&m_Player));
-  m_Entities.emplace_back(std::make_unique<Enemy>(&m_Player));
 }
 
 auto Game::CheckForBounds(const sf::Vector2f &position) -> bool const {
@@ -60,8 +55,9 @@ auto Game::Run() -> void {
 
     float dt = (clock.restart().asSeconds());
 
-    m_Window.setView(m_Camera->GetViewPoint());
+    m_Player.OnUpdate(dt);
     m_Camera->SetCenterPoint(m_Player.GetPos());
+    m_Window.setView(m_Camera->GetViewPoint());
 
     m_Window.draw(m_Terrain);
 
@@ -70,7 +66,6 @@ auto Game::Run() -> void {
     // { return a->GetPos().y < b->GetPos().y; });
 
     m_Window.draw(m_Player);
-    m_Player.OnUpdate(dt);
 
     for (const auto& entity : m_Entities)
     {
