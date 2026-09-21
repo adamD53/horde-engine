@@ -20,18 +20,23 @@ Game::Game(const GameSpecification &spec) {
   m_Tilesets.emplace(std::pair(
       "Floors_Tiles",
       std::make_unique<sf::Texture>(RESOURCES_PATH "world/Floors_Tiles.png")));
-  m_Tilesets.emplace(std::pair(
-      "Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png")));
-  m_Tilesets.emplace(std::pair(
-      "Props", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Props.png")));
-  m_Tilesets.emplace(std::pair(
-      "Roofs", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Roofs.png")));
-  m_Tilesets.emplace(std::pair(
-      "Walls", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Walls.png")));
+  m_Tilesets.emplace(std::pair("Trees", std::make_unique<sf::Texture>(
+                                            RESOURCES_PATH "world/Trees.png")));
+  m_Tilesets.emplace(std::pair("Props", std::make_unique<sf::Texture>(
+                                            RESOURCES_PATH "world/Props.png")));
+  m_Tilesets.emplace(std::pair("Roofs", std::make_unique<sf::Texture>(
+                                            RESOURCES_PATH "world/Roofs.png")));
+  m_Tilesets.emplace(std::pair("Walls", std::make_unique<sf::Texture>(
+                                            RESOURCES_PATH "world/Walls.png")));
   m_Terrain.Load(RESOURCES_PATH "world/map.tmx", m_Tilesets);
   m_Player.SetTerrain(m_Terrain);
 
   m_PlayerGUI = std::make_unique<PlayerGUI>(&m_Window);
+
+  m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+  m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+  m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+  m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
 }
 
 auto Game::CheckForBounds(const sf::Vector2f &position) -> bool const {
@@ -59,19 +64,12 @@ auto Game::Run() -> void {
     m_Camera->SetCenterPoint(m_Player.GetPos());
     m_Window.setView(m_Camera->GetViewPoint());
 
-    m_Window.draw(m_Terrain);
+    m_Terrain.DrawWithActor(m_Window, m_Player, m_Player.GetPos().y);
 
-    // Uncomment following when trees are made as a entire object
-    // std::sort(m_Entities.begin(), m_Entities.end(), [](Entity* a, Entity* b)
-    // { return a->GetPos().y < b->GetPos().y; });
-
-    m_Window.draw(m_Player);
-
-    for (const auto& entity : m_Entities)
-    {
-        m_Window.draw(*entity);
-        entity->OnUpdate(dt);
-        m_Player.CheckForCollision(entity.get());
+    for (const auto &entity : m_Entities) {
+      m_Window.draw(*entity);
+      entity->OnUpdate(dt);
+      m_Player.CheckForCollision(entity.get());
     }
 
     timer += dt;

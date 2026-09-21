@@ -1,20 +1,22 @@
 ﻿#include "terrain.hpp"
 #include "static_entity.hpp"
+#include "tile_collision.hpp"
 
 #include <memory>
 #include <print>
 #include <vector>
 #include <sstream>
 #include <stdexcept>
+#include <array>
 
 namespace
 {
-bool SolidProperty(tinyxml2::XMLElement* element, bool fallback)
+auto BoolProperty(tinyxml2::XMLElement* element, const char* name, bool fallback) -> bool
 {
     if (auto* properties = element->FirstChildElement("properties"))
         for (auto* property = properties->FirstChildElement("property"); property;
              property = property->NextSiblingElement("property"))
-            if (std::string(property->Attribute("name") ? property->Attribute("name") : "") == "solid")
+            if (std::string(property->Attribute("name") ? property->Attribute("name") : "") == name)
                 return property->BoolAttribute("value", fallback);
     return fallback;
 }
@@ -64,35 +66,6 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
 
         std::vector<size_t> writePos(m_Tilesets.size(), 0);
 
-        // TODO: refactor this to create one tree object, not individual tile. Make tree objects in tiled
-        // if (!layer.name.compare("trees"))
-        // {
-        //     for (uint32_t y = 0; y < m_MapHeight; ++y)
-        //     {
-        //         for (uint32_t x = 0; x < m_MapWidth; ++x)
-        //         {
-        //             const uint32_t gid = gids[y * m_MapWidth + x];
-        //             if (!gid || gid >= m_GidToTileset.size()) continue;
-        //             const uint32_t tsIndex = m_GidToTileset[gid];
-        //             if (tsIndex < 0) continue;
-
-        //             const Tileset& ts      = m_Tilesets[tsIndex];
-        //             const uint32_t localId = gid - ts.firstGid;
-        //             const uint32_t tu      = localId % ts.columns;
-        //             const uint32_t tv      = localId / ts.columns;
-
-        //             auto px = (float)(x * ts.tileW);
-        //             auto py = (float)(y * ts.tileH);
-        //             auto tx = (float)(tu * ts.tileW);
-        //             auto ty = (float)(tv * ts.tileH);
-
-        //             Entity* staticEntity = new StaticEntity(px, py, tx, ty, ts.tex);
-        //             m_StaticEntities.push_back(staticEntity);
-        //         }
-        //     }
-        //     continue;
-        // }
-
         for (uint32_t y = 0; y < m_MapHeight; ++y)
         {
             for (uint32_t x = 0; x < m_MapWidth; ++x)
@@ -115,8 +88,9 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
                 auto tx = (float)(tu * ts.tileW);
                 auto ty = (float)(tv * ts.tileH);
 
-                size_t base = writePos[tsIndex] * 6;
-                sf::Vertex* v = &layer.vertices[tsIndex][base];
+                const auto base = writePos[tsIndex] * 6;
+                auto depthVertices = std::array<sf::Vertex, 6>{};
+                auto* v = ts.depthSorted ? depthVertices.data() : &layer.vertices[tsIndex][base];
 
                 v[0] = sf::Vertex{{px, py}};
                 v[0].texCoords = {tx, ty};
@@ -131,12 +105,32 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
                 v[5] = sf::Vertex{{px, py + ts.tileH}};
                 v[5].texCoords = {tx, ty + ts.tileH};
 
-                writePos[tsIndex]++;
+                if (ts.depthSorted)
+                {
+                    const auto depth = py + ts.depthOffsets[localId];
+                    auto batch = std::find_if(m_DepthBatches.begin(), m_DepthBatches.end(), [&](const auto& item)
+                    {
+                        return item.depth == depth && item.texture == ts.tex;
+                    });
+                    if (batch == m_DepthBatches.end())
+                    {
+                        m_DepthBatches.push_back({sf::VertexArray(sf::PrimitiveType::Triangles), ts.tex, depth});
+                        batch = std::prev(m_DepthBatches.end());
+                    }
+                    for (const auto& vertex : depthVertices) batch->vertices.append(vertex);
+                }
+                else ++writePos[tsIndex];
             }
         }
 
-        m_Layers.push_back(layer);
+        for (auto index = size_t{0}; index < m_Tilesets.size(); ++index)
+            layer.vertices[index].resize(writePos[index] * 6);
+        m_Layers.push_back(std::move(layer));
     }
+    std::stable_sort(m_DepthBatches.begin(), m_DepthBatches.end(), [](const auto& left, const auto& right)
+    {
+        return left.depth < right.depth;
+    });
 }
 
 auto Terrain::ParseCSV(tinyxml2::XMLElement* layer_data) -> std::vector<uint32_t>
@@ -202,13 +196,36 @@ auto Terrain::ParseTilesets(
         info.tileW = tileWidth;
         info.tileH = tileHeight;
         info.columns = columns;
+        info.depthSorted = BoolProperty(ts, "depthSorted", false);
+        info.depthOffsets.assign(tileCount, static_cast<float>(tileHeight));
         const sf::FloatRect fullTile({0.f, 0.f}, m_TileSize);
-        const bool solid = SolidProperty(ts, false);
+        const auto solid = BoolProperty(ts, "solid", false);
         info.collision.resize(tileCount, solid ? std::vector<sf::FloatRect>{fullTile} : std::vector<sf::FloatRect>{});
+        if (BoolProperty(ts, "pixelCollision", false))
+        {
+            const auto image = info.tex->copyToImage();
+            for (auto id = 0; id < tileCount; ++id)
+                info.collision[id] = BuildOpaqueTileCollision(image,
+                    {{(id % columns) * tileWidth, (id / columns) * tileHeight}, {tileWidth, tileHeight}});
+        }
         for (auto* tile = ts->FirstChildElement("tile"); tile; tile = tile->NextSiblingElement("tile"))
         {
+            if (auto* properties = tile->FirstChildElement("properties"))
+                for (auto* property = properties->FirstChildElement("property"); property;
+                     property = property->NextSiblingElement("property"))
+                    if (std::string(property->Attribute("name") ? property->Attribute("name") : "") == "depthOffset")
+                        info.depthOffsets.at(tile->UnsignedAttribute("id")) = property->FloatAttribute("value");
             auto& shapes = info.collision.at(tile->UnsignedAttribute("id"));
-            shapes = SolidProperty(tile, solid) ? std::vector<sf::FloatRect>{fullTile} : std::vector<sf::FloatRect>{};
+            if (BoolProperty(tile, "solid", false)) shapes = {fullTile};
+            else if (!BoolProperty(tile, "solid", true)) shapes.clear();
+            if (BoolProperty(tile, "pixelCollision", false))
+            {
+                const auto id = tile->UnsignedAttribute("id");
+                const auto image = info.tex->copyToImage();
+                shapes = BuildOpaqueTileCollision(image,
+                    {{static_cast<int>(id % columns) * tileWidth, static_cast<int>(id / columns) * tileHeight},
+                     {tileWidth, tileHeight}});
+            }
             if (auto* group = tile->FirstChildElement("objectgroup"))
             {
                 shapes.clear();
@@ -234,6 +251,7 @@ auto Terrain::LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*
 {
     m_Tilesets.clear();
     m_Layers.clear();
+    m_DepthBatches.clear();
     m_GidToTileset.clear();
     m_Document.Clear();
 
@@ -289,6 +307,25 @@ auto Terrain::ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -
 auto Terrain::GetStaticEntities() -> std::vector<Entity*> const
 {
     return m_StaticEntities;
+}
+
+void Terrain::DrawWithActor(sf::RenderTarget& target, const sf::Drawable& actor, float feetY) const
+{
+    target.draw(*this);
+    auto actorDrawn = false;
+    for (const auto& batch : m_DepthBatches)
+    {
+        // At the same depth, draw the actor in front of the scenery.
+        if (!actorDrawn && feetY < batch.depth)
+        {
+            target.draw(actor);
+            actorDrawn = true;
+        }
+        auto states = sf::RenderStates{};
+        states.texture = batch.texture;
+        target.draw(batch.vertices, states);
+    }
+    if (!actorDrawn) target.draw(actor);
 }
 
 void Terrain::draw(sf::RenderTarget& target, sf::RenderStates states) const

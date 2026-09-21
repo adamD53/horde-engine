@@ -19,6 +19,8 @@ struct Tileset
     int tileH;
     int columns;
     std::vector<std::vector<sf::FloatRect>> collision;
+    bool depthSorted = false;
+    std::vector<float> depthOffsets;
 };
 
 struct Layer
@@ -26,6 +28,19 @@ struct Layer
     std::vector<sf::VertexArray> vertices;
     tinyxml2::XMLElement* data;
     std::string name;
+};
+
+struct DepthBatch
+{
+    sf::VertexArray vertices{sf::PrimitiveType::Triangles};
+    const sf::Texture* texture = nullptr;
+    float depth = 0.f;
+};
+
+struct DepthActor
+{
+    const sf::Drawable* drawable;
+    float depth;
 };
 
 class Terrain : public sf::Drawable, sf::Transformable
@@ -38,6 +53,11 @@ public:
     void Load(const std::string& tmx_file, std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures);
     auto GetStaticEntities() -> std::vector<Entity*> const;
     auto ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -> sf::Vector2f;
+    void DrawWithActor(sf::RenderTarget& target, const sf::Drawable& actor, float feetY) const;
+    void DrawWithActors(sf::RenderTarget& target, std::vector<DepthActor> actors) const;
+    auto GetSize() const -> sf::Vector2f;
+    auto IsBlocked(sf::FloatRect body) const -> bool;
+    auto FindPath(sf::Vector2f start, sf::Vector2f goal, sf::Vector2f bodySize) const -> std::vector<sf::Vector2f>;
 
 private:
     std::vector<Tileset> m_Tilesets;
@@ -45,6 +65,7 @@ private:
     std::vector<Entity*> m_StaticEntities;
     tinyxml2::XMLDocument m_Document;
     std::vector<Layer> m_Layers;
+    std::vector<DepthBatch> m_DepthBatches;
 
     uint32_t m_MapWidth = 0;
     uint32_t m_MapHeight = 0;

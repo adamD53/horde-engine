@@ -9,6 +9,7 @@ public:
     void Reset(unsigned width, unsigned height, sf::Vector2f tileSize);
     void Add(unsigned x, unsigned y, sf::FloatRect bounds);
     auto Move(sf::FloatRect body, sf::Vector2f delta) const -> sf::Vector2f;
+    auto IsBlocked(sf::FloatRect body) const -> bool;
 
 private:
     auto Sweep(const sf::FloatRect& body, float distance, bool horizontal) const -> float;

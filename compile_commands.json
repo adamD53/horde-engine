@@ -67,6 +67,12 @@
 },
 {
   "directory": "C:/projects/sfml-game/build",
+  "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DPRODUCTION_BUILD=0 -DRESOURCES_PATH=\\\"C:/projects/sfml-game/resources/\\\" -DSFML_STATIC -D_CRT_SECURE_NO_WARNINGS -IC:\\projects\\sfml-game\\include -IC:\\projects\\sfml-game\\thirdparty\\tinyxml2 -IC:\\projects\\sfml-game\\thirdparty\\SFML-3.0.2\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++latest /FoCMakeFiles\\mygame.dir\\src\\tile_collision.cpp.obj /FdCMakeFiles\\mygame.dir\\ /FS -c C:\\projects\\sfml-game\\src\\tile_collision.cpp",
+  "file": "C:/projects/sfml-game/src/tile_collision.cpp",
+  "output": "C:/projects/sfml-game/build/CMakeFiles/mygame.dir/src/tile_collision.cpp.obj"
+},
+{
+  "directory": "C:/projects/sfml-game/build",
   "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DPRODUCTION_BUILD=0 -DRESOURCES_PATH=\\\"C:/projects/sfml-game/resources/\\\" -DSFML_STATIC -D_CRT_SECURE_NO_WARNINGS -IC:\\projects\\sfml-game\\include -IC:\\projects\\sfml-game\\thirdparty\\tinyxml2 -IC:\\projects\\sfml-game\\thirdparty\\SFML-3.0.2\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++latest /FoCMakeFiles\\mygame.dir\\thirdparty\\tinyxml2\\tinyxml2.cpp.obj /FdCMakeFiles\\mygame.dir\\ /FS -c C:\\projects\\sfml-game\\thirdparty\\tinyxml2\\tinyxml2.cpp",
   "file": "C:/projects/sfml-game/thirdparty/tinyxml2/tinyxml2.cpp",
   "output": "C:/projects/sfml-game/build/CMakeFiles/mygame.dir/thirdparty/tinyxml2/tinyxml2.cpp.obj"
@@ -82,6 +88,12 @@
   "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DSFML_STATIC -DTEST_MAP_PATH=\\\"C:/projects/sfml-game/resources/world/map.tmx\\\" -IC:\\projects\\sfml-game\\src -IC:\\projects\\sfml-game\\thirdparty\\tinyxml2 -IC:\\projects\\sfml-game\\thirdparty\\SFML-3.0.2\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++latest /FoCMakeFiles\\collision_tests.dir\\src\\collision_grid.cpp.obj /FdCMakeFiles\\collision_tests.dir\\ /FS -c C:\\projects\\sfml-game\\src\\collision_grid.cpp",
   "file": "C:/projects/sfml-game/src/collision_grid.cpp",
   "output": "C:/projects/sfml-game/build/CMakeFiles/collision_tests.dir/src/collision_grid.cpp.obj"
+},
+{
+  "directory": "C:/projects/sfml-game/build",
+  "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DSFML_STATIC -DTEST_MAP_PATH=\\\"C:/projects/sfml-game/resources/world/map.tmx\\\" -IC:\\projects\\sfml-game\\src -IC:\\projects\\sfml-game\\thirdparty\\tinyxml2 -IC:\\projects\\sfml-game\\thirdparty\\SFML-3.0.2\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++latest /FoCMakeFiles\\collision_tests.dir\\src\\tile_collision.cpp.obj /FdCMakeFiles\\collision_tests.dir\\ /FS -c C:\\projects\\sfml-game\\src\\tile_collision.cpp",
+  "file": "C:/projects/sfml-game/src/tile_collision.cpp",
+  "output": "C:/projects/sfml-game/build/CMakeFiles/collision_tests.dir/src/tile_collision.cpp.obj"
 },
 {
   "directory": "C:/projects/sfml-game/build",

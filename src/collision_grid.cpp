@@ -20,6 +20,22 @@ void CollisionGrid::Add(unsigned x, unsigned y, sf::FloatRect bounds)
     m_Cells.at(static_cast<size_t>(y) * m_Width + x).push_back(bounds);
 }
 
+auto CollisionGrid::IsBlocked(sf::FloatRect body) const -> bool
+{
+    if (m_Cells.empty() || body.position.x < 0 || body.position.y < 0 ||
+        body.position.x + body.size.x > m_Width * m_TileSize.x ||
+        body.position.y + body.size.y > m_Height * m_TileSize.y) return true;
+    const auto left = static_cast<unsigned>(body.position.x / m_TileSize.x);
+    const auto top = static_cast<unsigned>(body.position.y / m_TileSize.y);
+    const auto right = std::min(m_Width - 1, static_cast<unsigned>((body.position.x + body.size.x) / m_TileSize.x));
+    const auto bottom = std::min(m_Height - 1, static_cast<unsigned>((body.position.y + body.size.y) / m_TileSize.y));
+    for (auto y = top; y <= bottom; ++y)
+        for (auto x = left; x <= right; ++x)
+            for (const auto& obstacle : m_Cells[static_cast<size_t>(y) * m_Width + x])
+                if (body.findIntersection(obstacle)) return true;
+    return false;
+}
+
 auto CollisionGrid::Move(sf::FloatRect body, sf::Vector2f delta) const -> sf::Vector2f
 {
     if (m_Cells.empty()) return delta;
