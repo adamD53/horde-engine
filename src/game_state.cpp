@@ -1,4 +1,5 @@
 #include "game_state.hpp"
+#include "defeat_state.hpp"
 #include "enemy.hpp"
 #include "global_config.hpp"
 #include "menu_state.hpp"
@@ -92,6 +93,11 @@ void GameState::OnUpdate(float dt)
     std::erase_if(m_Entities, [](const auto& entity) { return entity->IsDead(); });
 
     m_PlayerGUI->Update(m_Player.GetHealthPoints(), m_Player.GetMaxHealthPoints());
+
+    if (m_Player.IsDead())
+    {
+        m_StateMachine.ChangeState(std::make_unique<DefeatState>(m_StateMachine, m_Window));
+    }
 }
 
 void GameState::OnRender(sf::RenderWindow& window)

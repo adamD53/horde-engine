@@ -26,10 +26,8 @@ void MenuState::OnExit()
 {
 }
 
-void MenuState::OnUpdate(float dt)
+void MenuState::OnUpdate([[maybe_unused]] float dt)
 {
-    (void)dt;
-
     const auto mousePos = m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window));
     if (m_PlayButton.getGlobalBounds().contains(mousePos))
     {
