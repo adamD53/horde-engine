@@ -1,0 +1,110 @@
+#include "game_state.hpp"
+#include "enemy.hpp"
+#include "global_config.hpp"
+#include "menu_state.hpp"
+#include "state_machine.hpp"
+
+#include <memory>
+#include <utility>
+
+GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
+    : m_StateMachine(stateMachine)
+    , m_Window(window)
+{
+    m_Camera = std::make_unique<Camera>(m_Window);
+    m_Window.setView(m_Camera->GetViewPoint());
+
+    m_Tilesets.emplace(std::pair("Water", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Water_tiles.png")));
+    m_Tilesets.emplace(
+        std::pair("Floors_Tiles", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Floors_Tiles.png")));
+    m_Tilesets.emplace(std::pair("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png")));
+    m_Tilesets.emplace(std::pair("Props", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Props.png")));
+    m_Tilesets.emplace(std::pair("Roofs", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Roofs.png")));
+    m_Tilesets.emplace(std::pair("Walls", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Walls.png")));
+    m_Terrain.Load(RESOURCES_PATH "world/map.tmx", m_Tilesets);
+    m_Player.SetTerrain(m_Terrain);
+
+    m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
+
+    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+}
+
+void GameState::OnEnter()
+{
+}
+
+void GameState::OnExit()
+{
+}
+
+auto GameState::CheckForBounds(const sf::Vector2f& position) const -> bool
+{
+    if (position.x <= config::leftBound || position.x >= config::rightBound) return true;
+    if (position.y <= config::topBound || position.y >= config::bottomBound) return true;
+    return false;
+}
+
+void GameState::OnUpdate(float dt)
+{
+    m_Player.OnUpdate(dt);
+    m_Camera->SetCenterPoint(m_Player.GetPos());
+
+    for (const auto& entity : m_Entities)
+    {
+        entity->OnUpdate(dt);
+        m_Player.CheckForCollision(entity.get());
+    }
+
+    m_Timer += dt;
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_Timer > config::shootingDelay)
+    {
+        const auto mousePosition =
+            m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window), m_Camera->GetViewPoint());
+        const auto direction =
+            sf::Vector2f{mousePosition.x - m_Player.GetPos().x, mousePosition.y - m_Player.GetPos().y};
+        m_Projectiles.emplace_back(m_Player.GetPos(), direction);
+        m_Timer = 0.0f;
+    }
+
+    for (auto& projectile : m_Projectiles)
+    {
+        projectile.OnUpdate(dt);
+    }
+    std::erase_if(m_Projectiles, [this](const auto& proj) { return CheckForBounds(proj.GetPos()); });
+
+    m_PlayerGUI->Update(m_Player.GetHealthPoints());
+}
+
+void GameState::OnRender(sf::RenderWindow& window)
+{
+    window.setView(m_Camera->GetViewPoint());
+
+    m_Terrain.DrawWithActor(window, m_Player, m_Player.GetPos().y);
+
+    for (const auto& entity : m_Entities)
+    {
+        window.draw(*entity);
+    }
+
+    for (const auto& projectile : m_Projectiles)
+    {
+        window.draw(projectile);
+    }
+
+    window.setView(window.getDefaultView());
+    m_PlayerGUI->Render();
+}
+
+void GameState::OnEvent(const sf::Event& event)
+{
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+    {
+        if (keyPressed->code == sf::Keyboard::Key::Escape)
+        {
+            m_StateMachine.ChangeState(std::make_unique<MenuState>(m_StateMachine, m_Window));
+        }
+    }
+}
