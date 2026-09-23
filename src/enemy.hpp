@@ -37,7 +37,8 @@ private:
     const Terrain* m_Terrain = nullptr;
     const std::vector<std::unique_ptr<Entity>>* m_Swarm = nullptr;
     sf::Vector2f m_Direction;
-    float timer = 0.0f;
+    const float m_AttackCooldown = 1.0f;
+    float m_AttackTimer = 1.0f;
 
     inline static std::mt19937 s_RandomDevice;
 

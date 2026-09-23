@@ -28,6 +28,9 @@ public:
     auto GetFeetBounds() const -> sf::FloatRect;
     auto GetPos() const -> sf::Vector2f override;
     auto GetHealthPoints() const -> float;
+    auto GetMaxHealthPoints() const -> float;
+    void TakeDamage(float amount) override;
+    auto IsDead() const -> bool override;
     auto GetBounds() const -> sf::FloatRect override;
     auto CheckForCollision(const Entity* target) const -> bool;
 
@@ -41,7 +44,8 @@ private:
     bool m_FacingRight = false;
     const uint32_t m_TexStride = 64;
     const float m_Speed = 150.0f;
-    float m_HealthPoints;
+    const float m_MaxHealthPoints = 100.0f;
+    float m_HealthPoints = 100.0f;
     const Terrain* m_Terrain = nullptr;
 
 private:

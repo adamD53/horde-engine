@@ -91,7 +91,7 @@ void GameState::OnUpdate(float dt)
 
     std::erase_if(m_Entities, [](const auto& entity) { return entity->IsDead(); });
 
-    m_PlayerGUI->Update(m_Player.GetHealthPoints());
+    m_PlayerGUI->Update(m_Player.GetHealthPoints(), m_Player.GetMaxHealthPoints());
 }
 
 void GameState::OnRender(sf::RenderWindow& window)
@@ -123,7 +123,11 @@ void GameState::OnRender(sf::RenderWindow& window)
 
 void GameState::OnEvent(const sf::Event& event)
 {
-    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+    if (const auto* resized = event.getIf<sf::Event::Resized>())
+    {
+        m_PlayerGUI->OnResize(resized->size);
+    }
+    else if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
     {
         if (keyPressed->code == sf::Keyboard::Key::Escape)
         {

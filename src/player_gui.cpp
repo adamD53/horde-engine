@@ -1,22 +1,31 @@
 #include "player_gui.hpp"
 
-#include <print>
+#include <algorithm>
 
 PlayerGUI::PlayerGUI(sf::RenderWindow& window)
     : m_Window(&window)
+    , m_WindowWidth(static_cast<float>(window.getSize().x))
 {
-    m_HealthBar.setSize({90.f, 30.f});
-    m_HealthBar.setPosition({10.f, 10.f});
+    m_BackgroundBar.setPosition({0.f, 0.f});
+    m_BackgroundBar.setSize({m_WindowWidth, m_BarHeight});
+    m_BackgroundBar.setFillColor(sf::Color(30, 30, 30, 220));
+
+    m_HealthBar.setPosition({0.f, 0.f});
+    m_HealthBar.setSize({m_WindowWidth, m_BarHeight});
     m_HealthBar.setFillColor(sf::Color::Red);
-    
-    m_BackgroundBar.setSize({150.f, 30.f});
-    m_BackgroundBar.setPosition({10.f, 10.f});
-    m_BackgroundBar.setFillColor(sf::Color::Black);
 }
 
-void PlayerGUI::Update(float playerHP)
+void PlayerGUI::Update(float currentHP, float maxHP)
 {
-    std::println("Health points: {0}", playerHP);
+    m_CurrentHealthRatio = (maxHP > 0.0f) ? std::clamp(currentHP / maxHP, 0.0f, 1.0f) : 0.0f;
+    m_HealthBar.setSize({m_WindowWidth * m_CurrentHealthRatio, m_BarHeight});
+}
+
+void PlayerGUI::OnResize(const sf::Vector2u& newSize)
+{
+    m_WindowWidth = static_cast<float>(newSize.x);
+    m_BackgroundBar.setSize({m_WindowWidth, m_BarHeight});
+    m_HealthBar.setSize({m_WindowWidth * m_CurrentHealthRatio, m_BarHeight});
 }
 
 void PlayerGUI::Render() const
@@ -26,9 +35,4 @@ void PlayerGUI::Render() const
         m_Window->draw(m_BackgroundBar);
         m_Window->draw(m_HealthBar);
     }
-}
-
-auto PlayerGUI::CalculateHealthBarPosition() const -> sf::Vector2f
-{
-    return m_HealthBar.getPosition();
 }

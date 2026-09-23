@@ -130,6 +130,14 @@ void Enemy::OnUpdate(float dt)
 
     const auto healthRatio = std::clamp(m_Health / m_MaxHealth, 0.f, 1.f);
     m_HpBar.setSize({44.f * healthRatio, 5.f});
+
+    m_AttackTimer += dt;
+    if (m_AttackTimer >= m_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))
+    {
+        constexpr auto attackDamage = 10.0f;
+        m_Target->TakeDamage(attackDamage);
+        m_AttackTimer = 0.0f;
+    }
 }
 
 void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const

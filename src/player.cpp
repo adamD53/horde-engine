@@ -3,6 +3,7 @@
 #include "global_config.hpp"
 #include "terrain.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 Player::Player()
@@ -47,6 +48,21 @@ auto Player::GetPos() const -> sf::Vector2f
 auto Player::GetHealthPoints() const -> float
 {
     return m_HealthPoints;
+}
+
+auto Player::GetMaxHealthPoints() const -> float
+{
+    return m_MaxHealthPoints;
+}
+
+void Player::TakeDamage(float amount)
+{
+    m_HealthPoints = std::max(0.0f, m_HealthPoints - amount);
+}
+
+auto Player::IsDead() const -> bool
+{
+    return m_HealthPoints <= 0.0f;
 }
 
 auto Player::CheckForCollision(const Entity* target) const -> bool
