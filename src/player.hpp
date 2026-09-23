@@ -23,13 +23,13 @@ public:
     Player();
     ~Player() = default;
 
-    auto OnUpdate(float dt) -> void override;
-    void SetTerrain(const Terrain& terrain) { m_Terrain = &terrain; }
+    void OnUpdate(float dt) override;
+    void SetTerrain(const Terrain& terrain);
     auto GetFeetBounds() const -> sf::FloatRect;
-    auto GetPos() -> sf::Vector2f const override;
-    auto GetHealthPoints() -> float&;
-    auto GetBounds() -> sf::FloatRect const override;
-    auto CheckForCollision(Entity* target) -> bool const;
+    auto GetPos() const -> sf::Vector2f override;
+    auto GetHealthPoints() const -> float;
+    auto GetBounds() const -> sf::FloatRect override;
+    auto CheckForCollision(const Entity* target) const -> bool;
 
 private:
     std::unordered_map<std::string, sf::Texture> m_AnimationTextures;

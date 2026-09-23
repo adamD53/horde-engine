@@ -2,25 +2,33 @@
 
 #include <print>
 
-PlayerGUI::PlayerGUI(sf::RenderWindow* window)
-    : m_Window(window)
+PlayerGUI::PlayerGUI(sf::RenderWindow& window)
+    : m_Window(&window)
 {
     m_HealthBar.setSize({90.f, 30.f});
-    m_HealthBar.setPosition({10, 10});
+    m_HealthBar.setPosition({10.f, 10.f});
     m_HealthBar.setFillColor(sf::Color::Red);
     
     m_BackgroundBar.setSize({150.f, 30.f});
-    m_BackgroundBar.setPosition({10, 10});
+    m_BackgroundBar.setPosition({10.f, 10.f});
     m_BackgroundBar.setFillColor(sf::Color::Black);
 }
 
-auto PlayerGUI::Update(float& playerHP) -> void
+void PlayerGUI::Update(float playerHP)
 {
     std::println("Health points: {0}", playerHP);
 }
 
-auto PlayerGUI::Render() -> void
+void PlayerGUI::Render() const
 {
-    m_Window->draw(m_BackgroundBar);
-    m_Window->draw(m_HealthBar);
+    if (m_Window)
+    {
+        m_Window->draw(m_BackgroundBar);
+        m_Window->draw(m_HealthBar);
+    }
+}
+
+auto PlayerGUI::CalculateHealthBarPosition() const -> sf::Vector2f
+{
+    return m_HealthBar.getPosition();
 }

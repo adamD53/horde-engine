@@ -5,18 +5,18 @@
 class PlayerGUI
 {
 public:
-    PlayerGUI(sf::RenderWindow* window);
+    PlayerGUI(sf::RenderWindow& window);
     ~PlayerGUI() = default;
 
 public:
-    auto Render() -> void;
-    auto Update(float& playerHP) -> void;
+    void Render() const;
+    void Update(float playerHP);
 
 private:
     sf::RectangleShape m_HealthBar;
     sf::RectangleShape m_BackgroundBar;
-    sf::RenderWindow* m_Window;
+    sf::RenderWindow* m_Window = nullptr;
 
 private:
-    auto CalculateHealthBarPosition() -> sf::Vector2f const;
+    auto CalculateHealthBarPosition() const -> sf::Vector2f;
 };

@@ -11,8 +11,9 @@ public:
 
 public:
     auto GetSprite() -> sf::Sprite&;
-    auto GetPos() -> sf::Vector2f const override;
-    auto GetBounds() -> sf::FloatRect const override;
+    auto GetSprite() const -> const sf::Sprite&;
+    auto GetPos() const -> sf::Vector2f override;
+    auto GetBounds() const -> sf::FloatRect override;
 
 private:
     float m_PosX, m_PosY, m_TexX, m_TexY;

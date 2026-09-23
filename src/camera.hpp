@@ -7,11 +7,11 @@ class Camera
 public:
     Camera(sf::RenderWindow& window);
 
-    auto GetViewPoint() -> sf::View const;
-    auto GetUIViewPoint() -> sf::View const;
+    auto GetViewPoint() const -> sf::View;
+    auto GetUIViewPoint() const -> sf::View;
     
-    auto SetUIViewPoint() -> void;
-    auto SetCenterPoint(const sf::Vector2f& centerPoint) -> void;
+    void SetUIViewPoint();
+    void SetCenterPoint(const sf::Vector2f& centerPoint);
 
 private:
     sf::View m_View, m_UIView;

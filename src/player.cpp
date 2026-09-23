@@ -21,7 +21,12 @@ Player::Player()
     m_Animation = std::make_unique<Animation>(0.2f);
 }
 
-auto Player::GetBounds() -> sf::FloatRect const
+void Player::SetTerrain(const Terrain& terrain)
+{
+    m_Terrain = &terrain;
+}
+
+auto Player::GetBounds() const -> sf::FloatRect
 {
     return m_Sprite->getGlobalBounds();
 }
@@ -32,54 +37,55 @@ auto Player::GetFeetBounds() const -> sf::FloatRect
     return {m_Sprite->getPosition() + sf::Vector2f(-5.f, -6.f), {10.f, 6.f}};
 }
 
-auto Player::GetPos() -> sf::Vector2f const
+auto Player::GetPos() const -> sf::Vector2f
 {
     return m_Sprite->getPosition();
 }
 
-auto Player::GetHealthPoints() -> float&
+auto Player::GetHealthPoints() const -> float
 {
     return m_HealthPoints;
 }
 
-auto Player::CheckForCollision(Entity* target) -> bool const
+auto Player::CheckForCollision(const Entity* target) const -> bool
 {
-    if (Player::GetBounds().findIntersection(target->GetBounds()))
+    if (target && GetBounds().findIntersection(target->GetBounds()))
     {
         return true;
     }
     return false;
 }
 
-auto Player::OnUpdate(float dt) -> void
+void Player::OnUpdate(float dt)
 {
-    sf::Vector2f direction(0.0f, 0.0f);
-    uint32_t currentAnimationFrameIndex = 0;
-    int animationRow = 0;
+    auto direction = sf::Vector2f{0.0f, 0.0f};
+    auto currentAnimationFrameIndex = uint32_t{0};
+    auto animationRow = 0;
 
+    const auto currentPos = GetPos();
     m_CurrentState = PlayerState::IdleDown;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && (Player::GetPos().x > config::leftBound))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && (currentPos.x > config::leftBound))
     {
         direction.x += -1.0f;
         m_CurrentState = PlayerState::WalkLeft;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && (Player::GetPos().x < config::rightBound))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && (currentPos.x < config::rightBound))
     {
         direction.x += 1.0f;
         m_CurrentState = PlayerState::WalkRight;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && (Player::GetPos().y > config::topBound))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && (currentPos.y > config::topBound))
     {
         direction.y += -1.0f;
         m_CurrentState = PlayerState::WalkUp;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && (Player::GetPos().y < config::bottomBound))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && (currentPos.y < config::bottomBound))
     {
         direction.y += 1.0f;
         m_CurrentState = PlayerState::WalkDown;
     }
 
-    const uint32_t framesCount = (m_CurrentState == PlayerState::IdleDown) ? 4 : 6;
+    const auto framesCount = (m_CurrentState == PlayerState::IdleDown) ? 4u : 6u;
     currentAnimationFrameIndex = m_Animation->Update(framesCount);
     switch (m_CurrentState)
     {
@@ -107,7 +113,7 @@ auto Player::OnUpdate(float dt) -> void
             break;
     }
 
-    int frameX = currentAnimationFrameIndex * m_TexStride;
+    const auto frameX = static_cast<int>(currentAnimationFrameIndex * m_TexStride);
     m_Sprite->setTextureRect(
         sf::IntRect({frameX, animationRow}, {config::playerTextureWidth, config::playerTextureHeight}));
 

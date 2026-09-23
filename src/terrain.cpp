@@ -1,4 +1,4 @@
-﻿#include "terrain.hpp"
+#include "terrain.hpp"
 #include "static_entity.hpp"
 #include "tile_collision.hpp"
 
@@ -22,13 +22,7 @@ auto BoolProperty(tinyxml2::XMLElement* element, const char* name, bool fallback
 }
 }
 
-Terrain::~Terrain()
-{
-    for (const auto& staticEntity : m_StaticEntities)
-        if (staticEntity) delete staticEntity;
-}
-
-auto Terrain::BuildGridMap() -> void
+void Terrain::BuildGridMap()
 {
     for (int i = 0; i < m_Tilesets.size(); ++i)
     {
@@ -37,7 +31,7 @@ auto Terrain::BuildGridMap() -> void
     }
 }
 
-auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
+void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
 {
     for (auto* layerNode = map->FirstChildElement("layer"); layerNode;
          layerNode = layerNode->NextSiblingElement("layer"))
@@ -85,8 +79,8 @@ auto Terrain::BuildLayerVertices(tinyxml2::XMLElement* map) -> void
 
                 auto px = x * m_TileSize.x;
                 auto py = y * m_TileSize.y;
-                auto tx = (float)(tu * ts.tileW);
-                auto ty = (float)(tv * ts.tileH);
+                const auto tx = static_cast<float>(tu * ts.tileW);
+                const auto ty = static_cast<float>(tv * ts.tileH);
 
                 const auto base = writePos[tsIndex] * 6;
                 auto depthVertices = std::array<sf::Vertex, 6>{};
@@ -160,9 +154,9 @@ auto Terrain::ParseCSV(tinyxml2::XMLElement* layer_data) -> std::vector<uint32_t
     return gids;
 }
 
-auto Terrain::ParseTilesets(
+void Terrain::ParseTilesets(
     tinyxml2::XMLElement* map,
-    std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures) -> void
+    std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures)
 {
     const auto globalTW = map->IntAttribute("tilewidth");
     const auto globalTH = map->IntAttribute("tileheight");
@@ -257,7 +251,7 @@ auto Terrain::LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*
 
     if (m_Document.LoadFile(tmx_file.c_str()) != tinyxml2::XML_SUCCESS)
     {
-        std::println(stderr, "CFailed to load XML file from path: {0}", tmx_file);
+        std::println(stderr, "Failed to load XML file from path: {0}", tmx_file);
         return nullptr;
     }
 
@@ -271,8 +265,7 @@ auto Terrain::LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*
     return map;
 }
 
-auto Terrain::Load(const std::string& tmx_file, std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures)
-    -> void
+void Terrain::Load(const std::string& tmx_file, std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures)
 {
     tinyxml2::XMLElement* map = LoadXML(tmx_file);
     if (!map) throw std::runtime_error("Could not load terrain: " + tmx_file);
@@ -304,7 +297,7 @@ auto Terrain::ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -
     return m_Collision.Move(feet, movement);
 }
 
-auto Terrain::GetStaticEntities() -> std::vector<Entity*> const
+auto Terrain::GetStaticEntities() const -> const std::vector<std::unique_ptr<Entity>>&
 {
     return m_StaticEntities;
 }

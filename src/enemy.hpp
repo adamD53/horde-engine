@@ -7,17 +7,17 @@
 class Enemy : public Entity
 {
 public:
-    Enemy(Entity* target);
+    Enemy(Entity& target);
     ~Enemy() = default;
 
-    auto GetPos() -> sf::Vector2f const override;
-    auto OnUpdate(float dt) -> void override;
-    auto GetBounds() -> sf::FloatRect const override;
+    auto GetPos() const -> sf::Vector2f override;
+    void OnUpdate(float dt) override;
+    auto GetBounds() const -> sf::FloatRect override;
 
 private:
     sf::RectangleShape m_Sprite;
     float m_Speed = 100.f;
-    Entity* m_Target;
+    Entity* m_Target = nullptr;
     sf::Vector2f m_Direction;
     float timer = 0.0f;
 

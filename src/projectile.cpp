@@ -11,17 +11,17 @@ Projectile::Projectile(const sf::Vector2f& playerPosition, const sf::Vector2f& d
     m_Sprite.setPosition(playerPosition);
 }
 
-auto Projectile::GetBounds() -> sf::FloatRect const
+auto Projectile::GetBounds() const -> sf::FloatRect
 {
-    return sf::FloatRect();
+    return m_Sprite.getGlobalBounds();
 }
 
-auto Projectile::OnUpdate(float dt) -> void
+void Projectile::OnUpdate(float dt)
 {
     m_Sprite.move((m_Direction.length() > 0.01f ? m_Direction.normalized() : m_Direction) * m_Speed * dt);
 }
 
-auto Projectile::GetPos() -> sf::Vector2f const
+auto Projectile::GetPos() const -> sf::Vector2f
 {
     return m_Sprite.getPosition();
 }
@@ -31,12 +31,12 @@ void Projectile::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(m_Sprite, states);
 }
 
-auto Projectile::SetPosition(const sf::Vector2f& posistion) -> void
+void Projectile::SetPosition(const sf::Vector2f& position)
 {
-    m_Sprite.setPosition(posistion);
+    m_Sprite.setPosition(position);
 }
 
-auto Projectile::SetPlayerPosition(const sf::Vector2f& posistion) -> void
+void Projectile::SetPlayerPosition(const sf::Vector2f& position)
 {
-    m_PlayerPosition = posistion;
+    m_PlayerPosition = position;
 }

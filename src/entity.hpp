@@ -7,9 +7,9 @@ class Entity : public sf::Drawable
 public:
     virtual ~Entity() = default;
 
-    virtual auto OnEvent() -> void {}
-    virtual auto OnUpdate(float dt) -> void {}
-    virtual auto GetPos() -> sf::Vector2f const = 0;
-    virtual auto GetBounds() -> sf::FloatRect const = 0;
+    virtual void OnEvent() {}
+    virtual void OnUpdate(float dt) {}
+    virtual auto GetPos() const -> sf::Vector2f = 0;
+    virtual auto GetBounds() const -> sf::FloatRect = 0;
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override = 0;
 };

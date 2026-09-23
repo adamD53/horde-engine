@@ -24,7 +24,7 @@ class Game
 public:
     Game(const GameSpecification& spec);
     ~Game() = default;
-    auto Run() -> void;
+    void Run();
 
 private:
     sf::RenderWindow m_Window;
@@ -37,5 +37,5 @@ private:
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
 
 private:
-    auto CheckForBounds(const sf::Vector2f& position) -> bool const;
+    auto CheckForBounds(const sf::Vector2f& position) const -> bool;
 };

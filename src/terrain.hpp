@@ -47,11 +47,11 @@ class Terrain : public sf::Drawable, sf::Transformable
 {
 public:
     Terrain() = default;
-    ~Terrain();
+    ~Terrain() = default;
 
 public:
     void Load(const std::string& tmx_file, std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures);
-    auto GetStaticEntities() -> std::vector<Entity*> const;
+    auto GetStaticEntities() const -> const std::vector<std::unique_ptr<Entity>>&;
     auto ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -> sf::Vector2f;
     void DrawWithActor(sf::RenderTarget& target, const sf::Drawable& actor, float feetY) const;
     void DrawWithActors(sf::RenderTarget& target, std::vector<DepthActor> actors) const;
@@ -62,7 +62,7 @@ public:
 private:
     std::vector<Tileset> m_Tilesets;
     std::vector<int> m_GidToTileset;
-    std::vector<Entity*> m_StaticEntities;
+    std::vector<std::unique_ptr<Entity>> m_StaticEntities;
     tinyxml2::XMLDocument m_Document;
     std::vector<Layer> m_Layers;
     std::vector<DepthBatch> m_DepthBatches;
@@ -74,12 +74,12 @@ private:
 
 private:
     auto LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*;
-    auto ParseTilesets(
+    void ParseTilesets(
         tinyxml2::XMLElement* map,
-        std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures) -> void;
+        std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures);
     auto ParseCSV(tinyxml2::XMLElement* map) -> std::vector<uint32_t>;
     auto GetDataFromLayer(tinyxml2::XMLElement* map) -> tinyxml2::XMLElement*;
-    auto BuildGridMap() -> void;
-    auto BuildLayerVertices(tinyxml2::XMLElement* map) -> void;
+    void BuildGridMap();
+    void BuildLayerVertices(tinyxml2::XMLElement* map);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };

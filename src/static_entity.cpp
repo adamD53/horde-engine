@@ -7,7 +7,7 @@ StaticEntity::StaticEntity(float posX, float posY, float texX, float texY, const
     , m_TexY(texY)
     , m_Sprite(*texture)
 {
-    m_Sprite.setTextureRect(sf::IntRect({(int)m_TexX, (int)m_TexY}, {16, 16}));
+    m_Sprite.setTextureRect(sf::IntRect({static_cast<int>(m_TexX), static_cast<int>(m_TexY)}, {16, 16}));
     m_Sprite.setPosition({m_PosX, m_PosY});
 }
 
@@ -16,12 +16,17 @@ auto StaticEntity::GetSprite() -> sf::Sprite&
     return m_Sprite;
 }
 
-auto StaticEntity::GetBounds() -> sf::FloatRect const
+auto StaticEntity::GetSprite() const -> const sf::Sprite&
 {
-    return sf::FloatRect();
+    return m_Sprite;
 }
 
-auto StaticEntity::GetPos() -> sf::Vector2f const
+auto StaticEntity::GetBounds() const -> sf::FloatRect
+{
+    return m_Sprite.getGlobalBounds();
+}
+
+auto StaticEntity::GetPos() const -> sf::Vector2f
 {
     return m_Sprite.getPosition();
 }

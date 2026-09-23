@@ -4,8 +4,8 @@
 
 auto main() -> int
 {
-    GameSpecification specification({1280, 720, "title"});
+    const auto specification = GameSpecification{1280, 720, "title"};
 
-    Game game(specification);
+    auto game = Game{specification};
     game.Run();
 }
