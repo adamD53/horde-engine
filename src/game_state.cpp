@@ -82,12 +82,19 @@ void GameState::OnRender(sf::RenderWindow& window)
 {
     window.setView(m_Camera->GetViewPoint());
 
-    m_Terrain.DrawWithActor(window, m_Player, m_Player.GetPos().y);
+    auto depthActors = std::vector<DepthActor>{};
+    depthActors.reserve(1 + m_Entities.size());
+
+    depthActors.push_back({&m_Player, m_Player.GetPos().y});
 
     for (const auto& entity : m_Entities)
     {
-        window.draw(*entity);
+        const auto bounds = entity->GetBounds();
+        const auto feetY = bounds.position.y + bounds.size.y;
+        depthActors.push_back({entity.get(), feetY});
     }
+
+    m_Terrain.DrawWithActors(window, std::move(depthActors));
 
     for (const auto& projectile : m_Projectiles)
     {

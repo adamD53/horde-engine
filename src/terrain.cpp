@@ -1,12 +1,13 @@
 #include "terrain.hpp"
 #include "static_entity.hpp"
 
+#include <algorithm>
+#include <array>
 #include <memory>
 #include <print>
-#include <vector>
 #include <sstream>
 #include <stdexcept>
-#include <array>
+#include <vector>
 
 namespace
 {
@@ -290,21 +291,42 @@ auto Terrain::GetStaticEntities() const -> const std::vector<std::unique_ptr<Ent
 
 void Terrain::DrawWithActor(sf::RenderTarget& target, const sf::Drawable& actor, float feetY) const
 {
+    DrawWithActors(target, {{&actor, feetY}});
+}
+
+void Terrain::DrawWithActors(sf::RenderTarget& target, std::vector<DepthActor> actors) const
+{
     target.draw(*this);
-    auto actorDrawn = false;
+
+    std::stable_sort(actors.begin(), actors.end(), [](const auto& left, const auto& right) {
+        return left.depth < right.depth;
+    });
+
+    auto actorIt = actors.begin();
     for (const auto& batch : m_DepthBatches)
     {
-        // At the same depth, draw the actor in front of the scenery.
-        if (!actorDrawn && feetY < batch.depth)
+        while (actorIt != actors.end() && actorIt->depth < batch.depth)
         {
-            target.draw(actor);
-            actorDrawn = true;
+            if (actorIt->drawable)
+            {
+                target.draw(*(actorIt->drawable));
+            }
+            ++actorIt;
         }
+
         auto states = sf::RenderStates{};
         states.texture = batch.texture;
         target.draw(batch.vertices, states);
     }
-    if (!actorDrawn) target.draw(actor);
+
+    while (actorIt != actors.end())
+    {
+        if (actorIt->drawable)
+        {
+            target.draw(*(actorIt->drawable));
+        }
+        ++actorIt;
+    }
 }
 
 void Terrain::draw(sf::RenderTarget& target, sf::RenderStates states) const
