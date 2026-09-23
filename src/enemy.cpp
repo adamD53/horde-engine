@@ -1,4 +1,5 @@
 #include "enemy.hpp"
+#include "terrain.hpp"
 
 #include <cmath>
 
@@ -14,6 +15,20 @@ Enemy::Enemy(Entity& target)
     m_Sprite.setSize({50, 50});
     m_Sprite.setPosition({randomX, randomY});
     m_Sprite.setFillColor(sf::Color::Red);
+}
+
+void Enemy::SetTerrain(const Terrain& terrain)
+{
+    m_Terrain = &terrain;
+}
+
+auto Enemy::GetFeetBounds() const -> sf::FloatRect
+{
+    const auto bounds = GetBounds();
+    return {
+        {bounds.position.x + 5.f, bounds.position.y + bounds.size.y - 15.f},
+        {bounds.size.x - 10.f, 15.f}
+    };
 }
 
 auto Enemy::GetBounds() const -> sf::FloatRect
@@ -33,7 +48,12 @@ void Enemy::OnUpdate(float dt)
     m_Direction = m_Target->GetPos() - (GetPos() + sf::Vector2f(10.f, 10.f));
     if (m_Direction.length() > 0.001f)
     {
-        m_Sprite.move(m_Direction.normalized() * (dt * m_Speed));
+        auto movement = m_Direction.normalized() * (dt * m_Speed);
+        if (m_Terrain)
+        {
+            movement = m_Terrain->ResolveMovement(GetFeetBounds(), movement);
+        }
+        m_Sprite.move(movement);
     }
 }
 

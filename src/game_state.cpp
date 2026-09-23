@@ -26,10 +26,12 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
 
     m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
 
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    for (auto i = 0; i < 4; ++i)
+    {
+        auto enemy = std::make_unique<Enemy>(m_Player);
+        enemy->SetTerrain(m_Terrain);
+        m_Entities.emplace_back(std::move(enemy));
+    }
 }
 
 void GameState::OnEnter()
