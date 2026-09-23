@@ -17,12 +17,17 @@ public:
     auto GetBounds() const -> sf::FloatRect override;
     auto GetFeetBounds() const -> sf::FloatRect;
     void SetTerrain(const Terrain& terrain);
+    void SetSwarm(const std::vector<std::unique_ptr<Entity>>* swarm);
+
+private:
+    [[nodiscard]] auto CalculateSeparation() const -> sf::Vector2f;
 
 private:
     sf::RectangleShape m_Sprite;
     float m_Speed = 100.f;
     Entity* m_Target = nullptr;
     const Terrain* m_Terrain = nullptr;
+    const std::vector<std::unique_ptr<Entity>>* m_Swarm = nullptr;
     sf::Vector2f m_Direction;
     float timer = 0.0f;
 

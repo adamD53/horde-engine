@@ -30,6 +30,7 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     {
         auto enemy = std::make_unique<Enemy>(m_Player);
         enemy->SetTerrain(m_Terrain);
+        enemy->SetSwarm(&m_Entities);
         m_Entities.emplace_back(std::move(enemy));
     }
 }
