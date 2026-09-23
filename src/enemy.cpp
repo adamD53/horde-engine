@@ -1,6 +1,7 @@
 #include "enemy.hpp"
 #include "terrain.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 Enemy::Enemy(Entity& target)
@@ -15,6 +16,14 @@ Enemy::Enemy(Entity& target)
     m_Sprite.setSize({50, 50});
     m_Sprite.setPosition({randomX, randomY});
     m_Sprite.setFillColor(sf::Color::Red);
+
+    m_HpBackgroundBar.setSize({44.f, 5.f});
+    m_HpBackgroundBar.setFillColor(sf::Color(20, 20, 20));
+    m_HpBackgroundBar.setOutlineThickness(1.f);
+    m_HpBackgroundBar.setOutlineColor(sf::Color::Black);
+
+    m_HpBar.setSize({44.f, 5.f});
+    m_HpBar.setFillColor(sf::Color::Green);
 }
 
 void Enemy::SetTerrain(const Terrain& terrain)
@@ -73,6 +82,26 @@ auto Enemy::GetPos() const -> sf::Vector2f
     return m_Sprite.getPosition();
 }
 
+void Enemy::TakeDamage(float amount)
+{
+    m_Health = std::max(0.f, m_Health - amount);
+}
+
+auto Enemy::IsDead() const -> bool
+{
+    return m_Health <= 0.f;
+}
+
+auto Enemy::GetHealth() const -> float
+{
+    return m_Health;
+}
+
+auto Enemy::GetMaxHealth() const -> float
+{
+    return m_MaxHealth;
+}
+
 void Enemy::OnUpdate(float dt)
 {
     if (!m_Target) return;
@@ -94,6 +123,13 @@ void Enemy::OnUpdate(float dt)
         }
         m_Sprite.move(movement);
     }
+
+    const auto hpPos = GetPos() + sf::Vector2f(3.f, -10.f);
+    m_HpBackgroundBar.setPosition(hpPos);
+    m_HpBar.setPosition(hpPos);
+
+    const auto healthRatio = std::clamp(m_Health / m_MaxHealth, 0.f, 1.f);
+    m_HpBar.setSize({44.f * healthRatio, 5.f});
 }
 
 void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -105,4 +141,6 @@ void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
     snappedStates.transform.translate(offset);
 
     target.draw(m_Sprite, snappedStates);
+    target.draw(m_HpBackgroundBar, snappedStates);
+    target.draw(m_HpBar, snappedStates);
 }

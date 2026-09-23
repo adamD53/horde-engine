@@ -13,11 +13,14 @@ public:
     void OnUpdate(float dt) override;
     auto GetPos() const -> sf::Vector2f override;
     auto GetBounds() const -> sf::FloatRect override;
+    auto IsDead() const -> bool override;
+    void SetDead(bool dead);
 
 private:
     sf::Vector2f m_PlayerPosition;
     sf::Vector2f m_Direction;
     float m_Speed;
+    bool m_IsDead = false;
     sf::CircleShape m_Sprite;
     sf::Texture m_Texture;
 

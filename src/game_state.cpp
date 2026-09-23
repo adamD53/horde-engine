@@ -75,8 +75,21 @@ void GameState::OnUpdate(float dt)
     for (auto& projectile : m_Projectiles)
     {
         projectile.OnUpdate(dt);
+        const auto projBounds = projectile.GetBounds();
+        for (const auto& entity : m_Entities)
+        {
+            if (!entity->IsDead() && projBounds.findIntersection(entity->GetBounds()))
+            {
+                constexpr auto projectileDamage = 5.f;
+                entity->TakeDamage(projectileDamage);
+                projectile.SetDead(true);
+                break;
+            }
+        }
     }
-    std::erase_if(m_Projectiles, [this](const auto& proj) { return CheckForBounds(proj.GetPos()); });
+    std::erase_if(m_Projectiles, [this](const auto& proj) { return proj.IsDead() || CheckForBounds(proj.GetPos()); });
+
+    std::erase_if(m_Entities, [](const auto& entity) { return entity->IsDead(); });
 
     m_PlayerGUI->Update(m_Player.GetHealthPoints());
 }

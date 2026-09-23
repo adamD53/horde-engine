@@ -48,3 +48,13 @@ void Projectile::SetPlayerPosition(const sf::Vector2f& position)
 {
     m_PlayerPosition = position;
 }
+
+auto Projectile::IsDead() const -> bool
+{
+    return m_IsDead;
+}
+
+void Projectile::SetDead(bool dead)
+{
+    m_IsDead = dead;
+}
