@@ -1,9 +1,9 @@
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 #include <SFML/System/Vector2.hpp>
 
-namespace config 
+namespace horde::config 
 {
 constexpr uint32_t     leftBound             = 0; 
 constexpr uint32_t     topBound              = 0; 

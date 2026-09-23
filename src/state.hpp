@@ -3,6 +3,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
+namespace horde
+{
 class State
 {
 public:
@@ -14,3 +16,4 @@ public:
     virtual void OnRender(sf::RenderWindow& window) = 0;
     virtual void OnEvent(const sf::Event& event) = 0;
 };
+}

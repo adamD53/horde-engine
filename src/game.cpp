@@ -3,6 +3,8 @@
 
 #include <memory>
 
+namespace horde
+{
 Game::Game(const GameSpecification& spec)
 {
     m_Window.create(sf::VideoMode(sf::Vector2u(spec.width, spec.height)), spec.title);
@@ -51,4 +53,5 @@ void Game::Run()
 
         m_Window.display();
     }
+}
 }

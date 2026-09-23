@@ -2,6 +2,8 @@
 
 #include "entity.hpp"
 
+namespace horde
+{
 class Projectile : public Entity
 {
 public:
@@ -27,3 +29,4 @@ private:
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
+}

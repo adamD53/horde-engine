@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cmath>
 
+namespace horde
+{
 Camera::Camera(sf::RenderWindow& window)
 {
     m_View = window.getDefaultView();
@@ -38,4 +40,5 @@ void Camera::SetCenterPoint(const sf::Vector2f& centerPoint)
 void Camera::SetUIViewPoint()
 {
     m_UIView = sf::View(sf::FloatRect({0.f, 0.f}, m_View.getSize()));
+}
 }

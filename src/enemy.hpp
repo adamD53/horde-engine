@@ -4,6 +4,8 @@
 
 #include <random>
 
+namespace horde
+{
 class Terrain;
 
 class Enemy : public Entity
@@ -45,3 +47,4 @@ private:
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
+}

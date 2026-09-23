@@ -4,6 +4,8 @@
 
 #include <memory>
 
+namespace horde
+{
 class StateMachine
 {
 public:
@@ -22,3 +24,4 @@ private:
     std::unique_ptr<State> m_NextState;
     bool m_IsChanging{false};
 };
+}

@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+namespace horde
+{
 GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     : m_StateMachine(stateMachine)
     , m_Window(window)
@@ -141,3 +143,5 @@ void GameState::OnEvent(const sf::Event& event)
         }
     }
 }
+}
+

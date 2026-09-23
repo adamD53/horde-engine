@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace horde
+{
 class PlayerGUI
 {
 public:
@@ -20,3 +22,4 @@ private:
     float m_WindowWidth = 0.f;
     float m_CurrentHealthRatio = 1.f;
 };
+}

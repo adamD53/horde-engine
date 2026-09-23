@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+namespace horde
+{
 PlayerGUI::PlayerGUI(sf::RenderWindow& window)
     : m_Window(&window)
     , m_WindowWidth(static_cast<float>(window.getSize().x))
@@ -35,4 +37,5 @@ void PlayerGUI::Render() const
         m_Window->draw(m_BackgroundBar);
         m_Window->draw(m_HealthBar);
     }
+}
 }

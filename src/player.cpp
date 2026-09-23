@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cmath>
 
+namespace horde
+{
 Player::Player()
     : m_HealthPoints(100.f)
 {
@@ -151,3 +153,5 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
     target.draw(*m_Sprite, snappedStates);
 }
+}
+

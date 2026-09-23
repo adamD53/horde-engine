@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+namespace horde
+{
 Projectile::Projectile(const sf::Vector2f& playerPosition, const sf::Vector2f& direction)
     : m_PlayerPosition(playerPosition)
     , m_Direction(direction)
@@ -57,4 +59,5 @@ auto Projectile::IsDead() const -> bool
 void Projectile::SetDead(bool dead)
 {
     m_IsDead = dead;
+}
 }

@@ -3,6 +3,8 @@
 #include "entity.hpp"
 #include <SFML/Graphics.hpp>
 
+namespace horde
+{
 class StaticEntity : public Entity
 {
 public:
@@ -22,3 +24,4 @@ private:
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
+}

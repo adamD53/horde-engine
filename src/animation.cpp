@@ -1,5 +1,7 @@
 #include "animation.hpp"
 
+namespace horde
+{
 Animation::Animation(const float frameDuration)
     : m_FrameDuration(frameDuration)
     , m_LastFrameCount(0)
@@ -21,4 +23,5 @@ auto Animation::Update(const uint32_t frameCount) -> uint32_t
         m_Clock.restart();
     }
     return m_CurrentFrame;
+}
 }

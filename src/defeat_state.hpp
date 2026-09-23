@@ -4,6 +4,8 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace horde
+{
 class StateMachine;
 
 class DefeatState : public State
@@ -26,3 +28,4 @@ private:
     sf::RenderWindow& m_Window;
     sf::RectangleShape m_MenuButton;
 };
+}

@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace horde
+{
 class Camera
 {
 public:
@@ -16,3 +18,4 @@ public:
 private:
     sf::View m_View, m_UIView;
 };
+}

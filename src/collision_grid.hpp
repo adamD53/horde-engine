@@ -3,6 +3,8 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <vector>
 
+namespace horde
+{
 class CollisionGrid
 {
 public:
@@ -18,3 +20,4 @@ private:
     sf::Vector2f m_TileSize;
     std::vector<std::vector<sf::FloatRect>> m_Cells;
 };
+}

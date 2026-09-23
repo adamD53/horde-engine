@@ -1,5 +1,7 @@
 #include "static_entity.hpp"
 
+namespace horde
+{
 StaticEntity::StaticEntity(float posX, float posY, float texX, float texY, const sf::Texture* texture)
     : m_PosX(posX)
     , m_PosY(posY)
@@ -34,4 +36,5 @@ auto StaticEntity::GetPos() const -> sf::Vector2f
 void StaticEntity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite, states);
+}
 }

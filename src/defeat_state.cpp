@@ -4,6 +4,8 @@
 
 #include <memory>
 
+namespace horde
+{
 DefeatState::DefeatState(StateMachine& stateMachine, sf::RenderWindow& window)
     : m_StateMachine(stateMachine)
     , m_Window(window)
@@ -72,4 +74,5 @@ void DefeatState::OnEvent(const sf::Event& event)
 void DefeatState::ReturnToMenu()
 {
     m_StateMachine.ChangeState(std::make_unique<MenuState>(m_StateMachine, m_Window));
+}
 }

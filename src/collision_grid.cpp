@@ -4,6 +4,8 @@
 #include <cmath>
 #include <stdexcept>
 
+namespace horde
+{
 void CollisionGrid::Reset(unsigned width, unsigned height, sf::Vector2f tileSize)
 {
     if (!width || !height || tileSize.x <= 0 || tileSize.y <= 0)
@@ -76,4 +78,5 @@ auto CollisionGrid::Sweep(const sf::FloatRect& body, float distance, bool horizo
                     distance = std::max(distance, farEdge - start);
             }
     return distance;
+}
 }

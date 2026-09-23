@@ -6,6 +6,8 @@
 #include <memory>
 #include <unordered_map>
 
+namespace horde
+{
 enum class PlayerState
 {
     IdleDown,
@@ -51,3 +53,4 @@ private:
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
+}

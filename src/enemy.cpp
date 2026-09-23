@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cmath>
 
+namespace horde
+{
 Enemy::Enemy(Entity& target)
     : m_Target(&target)
 {
@@ -152,3 +154,5 @@ void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(m_HpBackgroundBar, snappedStates);
     target.draw(m_HpBar, snappedStates);
 }
+}
+

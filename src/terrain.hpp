@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace horde
+{
 struct Tileset
 {
     uint32_t firstGid;
@@ -84,3 +86,4 @@ private:
     void BuildLayerVertices(tinyxml2::XMLElement* map);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
+}

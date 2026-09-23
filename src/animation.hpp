@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace horde
+{
 class Animation
 {
 public:
@@ -16,3 +18,4 @@ private:
     const float m_FrameDuration;
     uint32_t m_LastFrameCount;
 };
+}

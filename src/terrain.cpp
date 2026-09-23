@@ -22,6 +22,8 @@ auto BoolProperty(tinyxml2::XMLElement* element, const char* name, bool fallback
 }
 }
 
+namespace horde
+{
 void Terrain::BuildGridMap()
 {
     for (int i = 0; i < m_Tilesets.size(); ++i)
@@ -340,3 +342,5 @@ void Terrain::draw(sf::RenderTarget& target, sf::RenderStates states) const
         }
     }
 }
+}
+

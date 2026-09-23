@@ -15,6 +15,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace horde
+{
 class StateMachine;
 
 class GameState : public State
@@ -45,3 +47,4 @@ private:
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
     float m_Timer{0.0f};
 };
+}

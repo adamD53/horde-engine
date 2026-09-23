@@ -2,6 +2,8 @@
 
 #include <utility>
 
+namespace horde
+{
 void StateMachine::ChangeState(std::unique_ptr<State> newState)
 {
     m_NextState = std::move(newState);
@@ -35,4 +37,5 @@ auto StateMachine::GetActiveState() -> State*
 auto StateMachine::GetActiveState() const -> const State*
 {
     return m_ActiveState.get();
+}
 }

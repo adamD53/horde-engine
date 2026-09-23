@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <string>
 
+namespace horde
+{
 struct GameSpecification
 {
     const uint32_t width, height;
@@ -24,3 +26,4 @@ private:
     sf::RenderWindow m_Window;
     StateMachine m_StateMachine;
 };
+}

@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace horde
+{
 class Entity : public sf::Drawable
 {
 public:
@@ -15,3 +17,4 @@ public:
     virtual auto IsDead() const -> bool { return false; }
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override = 0;
 };
+}

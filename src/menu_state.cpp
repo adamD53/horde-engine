@@ -4,6 +4,8 @@
 
 #include <memory>
 
+namespace horde
+{
 MenuState::MenuState(StateMachine& stateMachine, sf::RenderWindow& window)
     : m_StateMachine(stateMachine), m_Window(window)
 {
@@ -71,4 +73,5 @@ void MenuState::OnEvent(const sf::Event& event)
 void MenuState::StartGame()
 {
     m_StateMachine.ChangeState(std::make_unique<GameState>(m_StateMachine, m_Window));
+}
 }
