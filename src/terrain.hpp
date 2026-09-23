@@ -35,6 +35,7 @@ struct DepthBatch
     sf::VertexArray vertices{sf::PrimitiveType::Triangles};
     const sf::Texture* texture = nullptr;
     float depth = 0.f;
+    size_t layerIndex = 0;
 };
 
 struct DepthActor
