@@ -1,6 +1,8 @@
 #include "projectile.hpp"
 #include "global_config.hpp"
 
+#include <cmath>
+
 Projectile::Projectile(const sf::Vector2f& playerPosition, const sf::Vector2f& direction)
     : m_PlayerPosition(playerPosition)
     , m_Direction(direction)
@@ -28,7 +30,13 @@ auto Projectile::GetPos() const -> sf::Vector2f
 
 void Projectile::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    target.draw(m_Sprite, states);
+    const auto pos = m_Sprite.getPosition();
+    const auto offset = sf::Vector2f{std::round(pos.x) - pos.x, std::round(pos.y) - pos.y};
+
+    auto snappedStates = states;
+    snappedStates.transform.translate(offset);
+
+    target.draw(m_Sprite, snappedStates);
 }
 
 void Projectile::SetPosition(const sf::Vector2f& position)

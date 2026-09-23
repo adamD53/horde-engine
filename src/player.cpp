@@ -3,6 +3,8 @@
 #include "global_config.hpp"
 #include "terrain.hpp"
 
+#include <cmath>
+
 Player::Player()
     : m_HealthPoints(100.f)
 {
@@ -125,5 +127,11 @@ void Player::OnUpdate(float dt)
 
 void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    target.draw(*m_Sprite, states);
+    const auto pos = m_Sprite->getPosition();
+    const auto offset = sf::Vector2f{std::round(pos.x) - pos.x, std::round(pos.y) - pos.y};
+
+    auto snappedStates = states;
+    snappedStates.transform.translate(offset);
+
+    target.draw(*m_Sprite, snappedStates);
 }

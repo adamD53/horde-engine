@@ -1,5 +1,7 @@
 #include "enemy.hpp"
 
+#include <cmath>
+
 Enemy::Enemy(Entity& target)
     : m_Target(&target)
 {
@@ -37,5 +39,11 @@ void Enemy::OnUpdate(float dt)
 
 void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    target.draw(m_Sprite, states);
+    const auto pos = m_Sprite.getPosition();
+    const auto offset = sf::Vector2f{std::round(pos.x) - pos.x, std::round(pos.y) - pos.y};
+
+    auto snappedStates = states;
+    snappedStates.transform.translate(offset);
+
+    target.draw(m_Sprite, snappedStates);
 }
