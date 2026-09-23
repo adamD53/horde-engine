@@ -100,14 +100,6 @@ if(CMAKE_GENERATOR MATCHES "Ninja|Makefiles")
     )
 endif()
 
-include(CTest)
-if(BUILD_TESTING)
-    add_executable(collision_tests tests/collision_tests.cpp src/collision_grid.cpp src/tile_collision.cpp src/terrain.cpp thirdparty/tinyxml2/tinyxml2.cpp)
-    target_include_directories(collision_tests PRIVATE src thirdparty/tinyxml2)
-    target_link_libraries(collision_tests PRIVATE sfml-graphics)
-    target_compile_definitions(collision_tests PRIVATE TEST_MAP_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/world/map.tmx")
-    add_test(NAME collision COMMAND collision_tests)
-endif()
 
 
 

@@ -26,10 +26,10 @@ Game::Game(const GameSpecification& spec)
 
     m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
 
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
-    m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    // m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    // m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    // m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
+    // m_Entities.emplace_back(std::make_unique<Enemy>(m_Player));
 }
 
 auto Game::CheckForBounds(const sf::Vector2f& position) const -> bool
@@ -71,7 +71,8 @@ void Game::Run()
         if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && timer > config::shootingDelay)
         {
             const auto mousePosition = m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window));
-            const auto direction = sf::Vector2f{mousePosition.x - m_Player.GetPos().x, mousePosition.y - m_Player.GetPos().y};
+            const auto direction =
+                sf::Vector2f{mousePosition.x - m_Player.GetPos().x, mousePosition.y - m_Player.GetPos().y};
             m_Projectiles.emplace_back(m_Player.GetPos(), direction);
             timer = 0.0f;
         }

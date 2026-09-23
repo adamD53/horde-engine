@@ -312,18 +312,11 @@
    <property name="solid" type="bool" value="true"/>
   </properties>
   <image source="Props.png" width="400" height="400"/>
-  <tile id="100"><properties><property name="pixelCollision" type="bool" value="true"/></properties></tile>
-  <tile id="101"><properties><property name="pixelCollision" type="bool" value="true"/></properties></tile>
-  <tile id="125"><properties><property name="pixelCollision" type="bool" value="true"/></properties></tile>
-  <tile id="126"><properties><property name="pixelCollision" type="bool" value="true"/></properties></tile>
-  <tile id="150"><properties><property name="pixelCollision" type="bool" value="true"/></properties></tile>
-  <tile id="151"><properties><property name="pixelCollision" type="bool" value="true"/></properties></tile>
  </tileset>
  <tileset firstgid="1396" name="Roofs" tilewidth="16" tileheight="16" tilecount="625" columns="25">
   <properties>
    <property name="depthSorted" type="bool" value="true"/>
    <property name="solid" type="bool" value="true"/>
-   <property name="pixelCollision" type="bool" value="true"/>
   </properties>
   <image source="Roofs.png" width="400" height="400"/>
   <tile id="0">

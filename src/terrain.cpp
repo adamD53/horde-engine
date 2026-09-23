@@ -1,6 +1,5 @@
 #include "terrain.hpp"
 #include "static_entity.hpp"
-#include "tile_collision.hpp"
 
 #include <memory>
 #include <print>
@@ -195,13 +194,6 @@ void Terrain::ParseTilesets(
         const sf::FloatRect fullTile({0.f, 0.f}, m_TileSize);
         const auto solid = BoolProperty(ts, "solid", false);
         info.collision.resize(tileCount, solid ? std::vector<sf::FloatRect>{fullTile} : std::vector<sf::FloatRect>{});
-        if (BoolProperty(ts, "pixelCollision", false))
-        {
-            const auto image = info.tex->copyToImage();
-            for (auto id = 0; id < tileCount; ++id)
-                info.collision[id] = BuildOpaqueTileCollision(image,
-                    {{(id % columns) * tileWidth, (id / columns) * tileHeight}, {tileWidth, tileHeight}});
-        }
         for (auto* tile = ts->FirstChildElement("tile"); tile; tile = tile->NextSiblingElement("tile"))
         {
             if (auto* properties = tile->FirstChildElement("properties"))
@@ -212,14 +204,6 @@ void Terrain::ParseTilesets(
             auto& shapes = info.collision.at(tile->UnsignedAttribute("id"));
             if (BoolProperty(tile, "solid", false)) shapes = {fullTile};
             else if (!BoolProperty(tile, "solid", true)) shapes.clear();
-            if (BoolProperty(tile, "pixelCollision", false))
-            {
-                const auto id = tile->UnsignedAttribute("id");
-                const auto image = info.tex->copyToImage();
-                shapes = BuildOpaqueTileCollision(image,
-                    {{static_cast<int>(id % columns) * tileWidth, static_cast<int>(id / columns) * tileHeight},
-                     {tileWidth, tileHeight}});
-            }
             if (auto* group = tile->FirstChildElement("objectgroup"))
             {
                 shapes.clear();
