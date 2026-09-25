@@ -5,6 +5,7 @@ build/
 .idea/
 .vscode/
 .cache/
+.claude/
 CMakeSettings.json
 Makefile
 compile_commands.json

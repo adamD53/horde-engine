@@ -17,6 +17,7 @@ This project targets modern C++ (C++20/C++23) using SFML 3. When writing, modify
   - Keep implementation details and non-inline/non-template definitions in corresponding `.cpp` source files (in `src/`).
   - **Exception for Abstract Classes & Interfaces**: Abstract classes and interfaces may define trivial or empty virtual methods (e.g. default hooks like `{}`) directly in the `.hpp` header without creating a dedicated `.cpp` file.
 - **Headers**: Use `#pragma once` as header guards and maintain clean include hierarchies (prefer including only what is needed).
+- **SFML RULE**: Use the newest SFML 3 types.
 
 ---
 
