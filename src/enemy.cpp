@@ -6,23 +6,31 @@
 
 namespace horde
 {
-Enemy::Enemy(Entity& target)
-    : m_Target(&target)
+Enemy::Enemy()
 {
-    auto dist = std::uniform_real_distribution<float>{0.0f, 1000.0f};
-    auto dist_speed = std::uniform_int_distribution<int>{50, 100};
-    const auto randomX = dist(s_RandomDevice);
-    const auto randomY = dist(s_RandomDevice);
-    m_Speed = static_cast<float>(dist_speed(s_RandomDevice));
-
-    m_Sprite.setSize({50, 50});
-    m_Sprite.setPosition({randomX, randomY});
+    m_Sprite.setSize({50.f, 50.f});
     m_Sprite.setFillColor(sf::Color::Red);
 
     m_HpBackgroundBar.setSize({44.f, 5.f});
     m_HpBackgroundBar.setFillColor(sf::Color(20, 20, 20));
     m_HpBackgroundBar.setOutlineThickness(1.f);
     m_HpBackgroundBar.setOutlineColor(sf::Color::Black);
+
+    m_HpBar.setSize({44.f, 5.f});
+    m_HpBar.setFillColor(sf::Color::Green);
+}
+
+void Enemy::Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain)
+{
+    m_Target = &target;
+    m_Terrain = &terrain;
+    m_Health = m_MaxHealth;
+    m_AttackTimer = m_AttackCooldown;
+
+    auto dist_speed = std::uniform_int_distribution<int>{50, 100};
+    m_Speed = static_cast<float>(dist_speed(s_RandomDevice));
+
+    m_Sprite.setPosition(spawnPosition);
 
     m_HpBar.setSize({44.f, 5.f});
     m_HpBar.setFillColor(sf::Color::Green);
@@ -39,14 +47,14 @@ auto Enemy::GetFeetBounds() const -> sf::FloatRect
     return {{bounds.position.x + 5.f, bounds.position.y + bounds.size.y - 15.f}, {bounds.size.x - 10.f, 15.f}};
 }
 
-void Enemy::SetSwarm(const std::vector<std::unique_ptr<Entity>>* swarm)
+void Enemy::SetSwarm(std::span<const std::unique_ptr<Entity>> swarm)
 {
     m_Swarm = swarm;
 }
 
 auto Enemy::CalculateSeparation() const -> sf::Vector2f
 {
-    if (!m_Swarm)
+    if (m_Swarm.empty())
     {
         return {0.f, 0.f};
     }
@@ -55,7 +63,7 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
     auto separation = sf::Vector2f{0.f, 0.f};
     const auto currentPos = GetPos();
 
-    for (const auto& peer : *m_Swarm)
+    for (const auto& peer : m_Swarm)
     {
         if (peer.get() == this)
         {

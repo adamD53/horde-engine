@@ -7,8 +7,10 @@ namespace horde
 class Projectile : public Entity
 {
 public:
-    Projectile(const sf::Vector2f& playerPosition, const sf::Vector2f& direction);
+    Projectile();
     ~Projectile() = default;
+
+    void Spawn(const sf::Vector2f& playerPosition, const sf::Vector2f& direction);
 
     void SetPosition(const sf::Vector2f& position);
     void SetPlayerPosition(const sf::Vector2f& position);

@@ -3,6 +3,7 @@
 #include "entity.hpp"
 
 #include <random>
+#include <span>
 
 namespace horde
 {
@@ -11,15 +12,16 @@ class Terrain;
 class Enemy : public Entity
 {
 public:
-    Enemy(Entity& target);
+    Enemy();
     ~Enemy() = default;
 
+    void Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain);
     auto GetPos() const -> sf::Vector2f override;
     void OnUpdate(float dt) override;
     auto GetBounds() const -> sf::FloatRect override;
     auto GetFeetBounds() const -> sf::FloatRect;
     void SetTerrain(const Terrain& terrain);
-    void SetSwarm(const std::vector<std::unique_ptr<Entity>>* swarm);
+    void SetSwarm(std::span<const std::unique_ptr<Entity>> swarm);
     void TakeDamage(float amount) override;
     auto IsDead() const -> bool override;
     auto GetHealth() const -> float;
@@ -37,7 +39,7 @@ private:
     float m_Health = 100.f;
     Entity* m_Target = nullptr;
     const Terrain* m_Terrain = nullptr;
-    const std::vector<std::unique_ptr<Entity>>* m_Swarm = nullptr;
+    std::span<const std::unique_ptr<Entity>> m_Swarm;
     sf::Vector2f m_Direction;
     const float m_AttackCooldown = 1.0f;
     float m_AttackTimer = 1.0f;

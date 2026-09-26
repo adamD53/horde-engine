@@ -1,7 +1,9 @@
 #pragma once
 
 #include "camera.hpp"
+#include "enemy_spawner.hpp"
 #include "entity.hpp"
+#include "object_pool.hpp"
 #include "player.hpp"
 #include "player_gui.hpp"
 #include "projectile.hpp"
@@ -38,8 +40,9 @@ private:
     StateMachine& m_StateMachine;
     sf::RenderWindow& m_Window;
 
-    std::vector<std::unique_ptr<Entity>> m_Entities;
-    std::vector<Projectile> m_Projectiles;
+    ObjectPool<std::unique_ptr<Entity>> m_EnemyPool;
+    ObjectPool<Projectile> m_ProjectilePool;
+    EnemySpawner m_EnemySpawner;
     Terrain m_Terrain;
     Player m_Player;
     std::unordered_map<std::string, std::unique_ptr<sf::Texture>> m_Tilesets;

@@ -29,13 +29,12 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
 
     m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
 
-    for (auto i = 0; i < 4; ++i)
-    {
-        auto enemy = std::make_unique<Enemy>(m_Player);
-        enemy->SetTerrain(m_Terrain);
-        enemy->SetSwarm(&m_Entities);
-        m_Entities.emplace_back(std::move(enemy));
-    }
+    m_EnemyPool.PreAllocate(config::maxEnemyCount, []() {
+        return std::make_unique<Enemy>();
+    });
+    m_ProjectilePool.PreAllocate(config::maxProjectileCount);
+
+    m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
 }
 
 void GameState::OnEnter()
@@ -58,10 +57,12 @@ void GameState::OnUpdate(float dt)
     m_Player.OnUpdate(dt);
     m_Camera->SetCenterPoint(m_Player.GetPos());
 
-    for (const auto& entity : m_Entities)
+    const auto activeEnemies = m_EnemyPool.GetActive();
+    for (const auto& enemy : activeEnemies)
     {
-        entity->OnUpdate(dt);
-        m_Player.CheckForCollision(entity.get());
+        static_cast<Enemy*>(enemy.get())->SetSwarm(activeEnemies);
+        enemy->OnUpdate(dt);
+        m_Player.CheckForCollision(enemy.get());
     }
 
     m_Timer += dt;
@@ -71,28 +72,41 @@ void GameState::OnUpdate(float dt)
             m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window), m_Camera->GetViewPoint());
         const auto direction =
             sf::Vector2f{mousePosition.x - m_Player.GetPos().x, mousePosition.y - m_Player.GetPos().y};
-        m_Projectiles.emplace_back(m_Player.GetPos(), direction);
+        if (auto* projectile = m_ProjectilePool.Acquire())
+        {
+            projectile->Spawn(m_Player.GetPos(), direction);
+        }
         m_Timer = 0.0f;
     }
 
-    for (auto& projectile : m_Projectiles)
+    auto activeProjectiles = m_ProjectilePool.GetActive();
+    for (auto& projectile : activeProjectiles)
     {
         projectile.OnUpdate(dt);
         const auto projBounds = projectile.GetBounds();
-        for (const auto& entity : m_Entities)
+        for (const auto& enemy : activeEnemies)
         {
-            if (!entity->IsDead() && projBounds.findIntersection(entity->GetBounds()))
+            if (!enemy->IsDead() && projBounds.findIntersection(enemy->GetBounds()))
             {
-                constexpr auto projectileDamage = 5.f;
-                entity->TakeDamage(projectileDamage);
+                enemy->TakeDamage(config::projectileDamage);
                 projectile.SetDead(true);
                 break;
             }
         }
     }
-    std::erase_if(m_Projectiles, [this](const auto& proj) { return proj.IsDead() || CheckForBounds(proj.GetPos()); });
 
-    std::erase_if(m_Entities, [](const auto& entity) { return entity->IsDead(); });
+    m_ProjectilePool.RemoveIf([this](const auto& proj) {
+        return proj.IsDead() || CheckForBounds(proj.GetPos());
+    });
+
+    m_EnemyPool.RemoveIf([](const auto& enemy) {
+        return enemy->IsDead();
+    });
+
+    if (m_EnemyPool.GetCount() == 0)
+    {
+        m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
+    }
 
     m_PlayerGUI->Update(m_Player.GetHealthPoints(), m_Player.GetMaxHealthPoints());
 
@@ -106,21 +120,22 @@ void GameState::OnRender(sf::RenderWindow& window)
 {
     window.setView(m_Camera->GetViewPoint());
 
+    const auto activeEnemies = m_EnemyPool.GetActive();
     auto depthActors = std::vector<DepthActor>{};
-    depthActors.reserve(1 + m_Entities.size());
+    depthActors.reserve(1 + activeEnemies.size());
 
     depthActors.push_back({&m_Player, m_Player.GetPos().y});
 
-    for (const auto& entity : m_Entities)
+    for (const auto& enemy : activeEnemies)
     {
-        const auto bounds = entity->GetBounds();
+        const auto bounds = enemy->GetBounds();
         const auto feetY = bounds.position.y + bounds.size.y;
-        depthActors.push_back({entity.get(), feetY});
+        depthActors.push_back({enemy.get(), feetY});
     }
 
     m_Terrain.DrawWithActors(window, std::move(depthActors));
 
-    for (const auto& projectile : m_Projectiles)
+    for (const auto& projectile : m_ProjectilePool.GetActive())
     {
         window.draw(projectile);
     }

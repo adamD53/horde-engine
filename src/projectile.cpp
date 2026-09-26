@@ -5,13 +5,19 @@
 
 namespace horde
 {
-Projectile::Projectile(const sf::Vector2f& playerPosition, const sf::Vector2f& direction)
-    : m_PlayerPosition(playerPosition)
-    , m_Direction(direction)
-    , m_Speed(config::projectileSpeed)
+Projectile::Projectile()
+    : m_Speed(config::projectileSpeed)
 {
     m_Sprite.setRadius(3.f);
     m_Sprite.setFillColor(sf::Color::Black);
+}
+
+void Projectile::Spawn(const sf::Vector2f& playerPosition, const sf::Vector2f& direction)
+{
+    m_PlayerPosition = playerPosition;
+    m_Direction = direction;
+    m_Speed = config::projectileSpeed;
+    m_IsDead = false;
     m_Sprite.setPosition(playerPosition);
 }
 
