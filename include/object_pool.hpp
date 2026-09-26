@@ -18,16 +18,6 @@ public:
         m_Data.resize(capacity);
     }
 
-    template <typename Factory>
-    void PreAllocate(size_t capacity, Factory factory)
-    {
-        m_Data.reserve(capacity);
-        for (size_t i = 0; i < capacity; ++i)
-        {
-            m_Data.push_back(factory());
-        }
-    }
-
     auto Acquire() -> T*
     {
         if (m_ActiveCount >= m_Data.size())

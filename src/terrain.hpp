@@ -4,9 +4,10 @@
 
 #include "tinyxml2.h"
 
-#include "entity.hpp"
 #include "collision_grid.hpp"
+#include "entity.hpp"
 
+#include <span>
 #include <unordered_map>
 #include <vector>
 
@@ -56,8 +57,7 @@ public:
     void Load(const std::string& tmx_file, std::unordered_map<std::string, std::unique_ptr<sf::Texture>>& textures);
     auto GetStaticEntities() const -> const std::vector<std::unique_ptr<Entity>>&;
     auto ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -> sf::Vector2f;
-    void DrawWithActor(sf::RenderTarget& target, const sf::Drawable& actor, float feetY) const;
-    void DrawWithActors(sf::RenderTarget& target, std::vector<DepthActor> actors) const;
+    void DrawWithActors(sf::RenderTarget& target, std::span<DepthActor> actors) const;
     auto GetSize() const -> sf::Vector2f;
     auto IsBlocked(sf::FloatRect body) const -> bool;
     auto FindPath(sf::Vector2f start, sf::Vector2f goal, sf::Vector2f bodySize) const -> std::vector<sf::Vector2f>;

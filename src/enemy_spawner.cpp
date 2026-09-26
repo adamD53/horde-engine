@@ -14,31 +14,6 @@ EnemySpawner::EnemySpawner()
 {
 }
 
-void EnemySpawner::SpawnWave(ObjectPool<std::unique_ptr<Entity>>& pool,
-                             Entity& target,
-                             const Terrain& terrain)
-{
-    const auto targetPos = target.GetPos();
-
-    for (auto i = 0u; i < m_CurrentWaveCount; ++i)
-    {
-        auto* entityPtr = pool.Acquire();
-        if (!entityPtr)
-        {
-            break;
-        }
-
-        const auto spawnPos = GenerateSpawnPosition(targetPos);
-        if (auto* enemy = dynamic_cast<Enemy*>(entityPtr->get()))
-        {
-            enemy->Spawn(target, spawnPos, terrain);
-        }
-    }
-
-    ++m_WaveIndex;
-    m_CurrentWaveCount = std::min(m_CurrentWaveCount * 2, config::maxEnemyCount);
-}
-
 auto EnemySpawner::GetCurrentWaveCount() const -> uint32_t
 {
     return m_CurrentWaveCount;

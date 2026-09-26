@@ -105,18 +105,22 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
                 if (ts.depthSorted)
                 {
                     const auto depth = py + ts.depthOffsets[localId];
-                    auto batch = std::find_if(m_DepthBatches.begin(), m_DepthBatches.end(), [&](const auto& item)
-                    {
-                        return item.depth == depth && item.texture == ts.tex && item.layerIndex == layerIndex;
-                    });
+                    auto batch = std::find_if(
+                        m_DepthBatches.begin(),
+                        m_DepthBatches.end(),
+                        [&](const auto& item)
+                        { return item.depth == depth && item.texture == ts.tex && item.layerIndex == layerIndex; });
                     if (batch == m_DepthBatches.end())
                     {
-                        m_DepthBatches.push_back({sf::VertexArray(sf::PrimitiveType::Triangles), ts.tex, depth, layerIndex});
+                        m_DepthBatches.push_back(
+                            {sf::VertexArray(sf::PrimitiveType::Triangles), ts.tex, depth, layerIndex});
                         batch = std::prev(m_DepthBatches.end());
                     }
-                    for (const auto& vertex : depthVertices) batch->vertices.append(vertex);
+                    for (const auto& vertex : depthVertices)
+                        batch->vertices.append(vertex);
                 }
-                else ++writePos[tsIndex];
+                else
+                    ++writePos[tsIndex];
             }
         }
 
@@ -124,11 +128,14 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
             layer.vertices[index].resize(writePos[index] * 6);
         m_Layers.push_back(std::move(layer));
     }
-    std::stable_sort(m_DepthBatches.begin(), m_DepthBatches.end(), [](const auto& left, const auto& right)
-    {
-        if (left.depth != right.depth) return left.depth < right.depth;
-        return left.layerIndex < right.layerIndex;
-    });
+    std::stable_sort(
+        m_DepthBatches.begin(),
+        m_DepthBatches.end(),
+        [](const auto& left, const auto& right)
+        {
+            if (left.depth != right.depth) return left.depth < right.depth;
+            return left.layerIndex < right.layerIndex;
+        });
 }
 
 auto Terrain::ParseCSV(tinyxml2::XMLElement* layer_data) -> std::vector<uint32_t>
@@ -207,18 +214,23 @@ void Terrain::ParseTilesets(
                     if (std::string(property->Attribute("name") ? property->Attribute("name") : "") == "depthOffset")
                         info.depthOffsets.at(tile->UnsignedAttribute("id")) = property->FloatAttribute("value");
             auto& shapes = info.collision.at(tile->UnsignedAttribute("id"));
-            if (BoolProperty(tile, "solid", false)) shapes = {fullTile};
-            else if (!BoolProperty(tile, "solid", true)) shapes.clear();
+            if (BoolProperty(tile, "solid", false))
+                shapes = {fullTile};
+            else if (!BoolProperty(tile, "solid", true))
+                shapes.clear();
             if (auto* group = tile->FirstChildElement("objectgroup"))
             {
                 shapes.clear();
-                for (auto* object = group->FirstChildElement("object"); object; object = object->NextSiblingElement("object"))
+                for (auto* object = group->FirstChildElement("object"); object;
+                     object = object->NextSiblingElement("object"))
                 {
-                    sf::FloatRect shape({object->FloatAttribute("x"), object->FloatAttribute("y")},
-                                        {object->FloatAttribute("width"), object->FloatAttribute("height")});
-                    if (object->FirstChildElement() || object->FloatAttribute("rotation") != 0 ||
-                        shape.size.x <= 0 || shape.size.y <= 0 || shape.position.x < 0 || shape.position.y < 0 ||
-                        shape.position.x + shape.size.x > m_TileSize.x || shape.position.y + shape.size.y > m_TileSize.y)
+                    sf::FloatRect shape(
+                        {object->FloatAttribute("x"), object->FloatAttribute("y")},
+                        {object->FloatAttribute("width"), object->FloatAttribute("height")});
+                    if (object->FirstChildElement() || object->FloatAttribute("rotation") != 0 || shape.size.x <= 0 ||
+                        shape.size.y <= 0 || shape.position.x < 0 || shape.position.y < 0 ||
+                        shape.position.x + shape.size.x > m_TileSize.x ||
+                        shape.position.y + shape.size.y > m_TileSize.y)
                         throw std::runtime_error("Tile collision must be an unrotated rectangle inside its cell");
                     shapes.push_back(shape);
                 }
@@ -291,18 +303,12 @@ auto Terrain::GetStaticEntities() const -> const std::vector<std::unique_ptr<Ent
     return m_StaticEntities;
 }
 
-void Terrain::DrawWithActor(sf::RenderTarget& target, const sf::Drawable& actor, float feetY) const
-{
-    DrawWithActors(target, {{&actor, feetY}});
-}
-
-void Terrain::DrawWithActors(sf::RenderTarget& target, std::vector<DepthActor> actors) const
+void Terrain::DrawWithActors(sf::RenderTarget& target, std::span<DepthActor> actors) const
 {
     target.draw(*this);
 
-    std::stable_sort(actors.begin(), actors.end(), [](const auto& left, const auto& right) {
-        return left.depth < right.depth;
-    });
+    std::stable_sort(
+        actors.begin(), actors.end(), [](const auto& left, const auto& right) { return left.depth < right.depth; });
 
     auto actorIt = actors.begin();
     for (const auto& batch : m_DepthBatches)
@@ -343,4 +349,3 @@ void Terrain::draw(sf::RenderTarget& target, sf::RenderStates states) const
     }
 }
 }
-

@@ -29,9 +29,7 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
 
     m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
 
-    m_EnemyPool.PreAllocate(config::maxEnemyCount, []() {
-        return std::make_unique<Enemy>();
-    });
+    m_EnemyPool.PreAllocate(config::maxEnemyCount);
     m_ProjectilePool.PreAllocate(config::maxProjectileCount);
 
     m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
@@ -58,11 +56,23 @@ void GameState::OnUpdate(float dt)
     m_Camera->SetCenterPoint(m_Player.GetPos());
 
     const auto activeEnemies = m_EnemyPool.GetActive();
-    for (const auto& enemy : activeEnemies)
+
+    m_EnemyPositions.clear();
+    m_EnemyPositions.reserve(activeEnemies.size());
+    for (const auto& enemyVariant : activeEnemies)
     {
-        static_cast<Enemy*>(enemy.get())->SetSwarm(activeEnemies);
-        enemy->OnUpdate(dt);
-        m_Player.CheckForCollision(enemy.get());
+        std::visit([&](const auto& enemy) {
+            m_EnemyPositions.push_back(enemy.GetPos());
+        }, enemyVariant);
+    }
+
+    for (auto& enemyVariant : activeEnemies)
+    {
+        std::visit([&](auto& enemy) {
+            enemy.SetSwarm(m_EnemyPositions);
+            enemy.OnUpdate(dt);
+            m_Player.CheckForCollision(&enemy);
+        }, enemyVariant);
     }
 
     m_Timer += dt;
@@ -84,12 +94,19 @@ void GameState::OnUpdate(float dt)
     {
         projectile.OnUpdate(dt);
         const auto projBounds = projectile.GetBounds();
-        for (const auto& enemy : activeEnemies)
+        for (auto& enemyVariant : activeEnemies)
         {
-            if (!enemy->IsDead() && projBounds.findIntersection(enemy->GetBounds()))
+            auto hit = false;
+            std::visit([&](auto& enemy) {
+                if (!enemy.IsDead() && projBounds.findIntersection(enemy.GetBounds()))
+                {
+                    enemy.TakeDamage(config::projectileDamage);
+                    projectile.SetDead(true);
+                    hit = true;
+                }
+            }, enemyVariant);
+            if (hit)
             {
-                enemy->TakeDamage(config::projectileDamage);
-                projectile.SetDead(true);
                 break;
             }
         }
@@ -99,8 +116,10 @@ void GameState::OnUpdate(float dt)
         return proj.IsDead() || CheckForBounds(proj.GetPos());
     });
 
-    m_EnemyPool.RemoveIf([](const auto& enemy) {
-        return enemy->IsDead();
+    m_EnemyPool.RemoveIf([](const auto& enemyVariant) {
+        return std::visit([](const auto& enemy) {
+            return enemy.IsDead();
+        }, enemyVariant);
     });
 
     if (m_EnemyPool.GetCount() == 0)
@@ -121,19 +140,21 @@ void GameState::OnRender(sf::RenderWindow& window)
     window.setView(m_Camera->GetViewPoint());
 
     const auto activeEnemies = m_EnemyPool.GetActive();
-    auto depthActors = std::vector<DepthActor>{};
-    depthActors.reserve(1 + activeEnemies.size());
+    m_DepthActors.clear();
+    m_DepthActors.reserve(1 + activeEnemies.size());
 
-    depthActors.push_back({&m_Player, m_Player.GetPos().y});
+    m_DepthActors.push_back({&m_Player, m_Player.GetPos().y});
 
-    for (const auto& enemy : activeEnemies)
+    for (const auto& enemyVariant : activeEnemies)
     {
-        const auto bounds = enemy->GetBounds();
-        const auto feetY = bounds.position.y + bounds.size.y;
-        depthActors.push_back({enemy.get(), feetY});
+        std::visit([&](const auto& enemy) {
+            const auto bounds = enemy.GetBounds();
+            const auto feetY = bounds.position.y + bounds.size.y;
+            m_DepthActors.push_back({&enemy, feetY});
+        }, enemyVariant);
     }
 
-    m_Terrain.DrawWithActors(window, std::move(depthActors));
+    m_Terrain.DrawWithActors(window, m_DepthActors);
 
     for (const auto& projectile : m_ProjectilePool.GetActive())
     {

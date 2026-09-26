@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera.hpp"
+#include "enemy.hpp"
 #include "enemy_spawner.hpp"
 #include "entity.hpp"
 #include "object_pool.hpp"
@@ -15,10 +16,13 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace horde
 {
+using EntityVariant = std::variant<Enemy>;
+
 class StateMachine;
 
 class GameState : public State
@@ -40,11 +44,13 @@ private:
     StateMachine& m_StateMachine;
     sf::RenderWindow& m_Window;
 
-    ObjectPool<std::unique_ptr<Entity>> m_EnemyPool;
+    ObjectPool<EntityVariant> m_EnemyPool;
     ObjectPool<Projectile> m_ProjectilePool;
     EnemySpawner m_EnemySpawner;
     Terrain m_Terrain;
     Player m_Player;
+    std::vector<sf::Vector2f> m_EnemyPositions;
+    std::vector<DepthActor> m_DepthActors;
     std::unordered_map<std::string, std::unique_ptr<sf::Texture>> m_Tilesets;
     std::unique_ptr<Camera> m_Camera;
     std::unique_ptr<PlayerGUI> m_PlayerGUI;

@@ -47,14 +47,14 @@ auto Enemy::GetFeetBounds() const -> sf::FloatRect
     return {{bounds.position.x + 5.f, bounds.position.y + bounds.size.y - 15.f}, {bounds.size.x - 10.f, 15.f}};
 }
 
-void Enemy::SetSwarm(std::span<const std::unique_ptr<Entity>> swarm)
+void Enemy::SetSwarm(std::span<const sf::Vector2f> swarmPositions)
 {
-    m_Swarm = swarm;
+    m_SwarmPositions = swarmPositions;
 }
 
 auto Enemy::CalculateSeparation() const -> sf::Vector2f
 {
-    if (m_Swarm.empty())
+    if (m_SwarmPositions.empty())
     {
         return {0.f, 0.f};
     }
@@ -63,14 +63,9 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
     auto separation = sf::Vector2f{0.f, 0.f};
     const auto currentPos = GetPos();
 
-    for (const auto& peer : m_Swarm)
+    for (const auto& peerPos : m_SwarmPositions)
     {
-        if (peer.get() == this)
-        {
-            continue;
-        }
-
-        const auto diff = currentPos - peer->GetPos();
+        const auto diff = currentPos - peerPos;
         const auto distance = diff.length();
 
         if (distance > 0.001f && distance < separationRadius)

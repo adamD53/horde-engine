@@ -20,5 +20,5 @@ constexpr uint32_t maxEnemyCount = 100;
 constexpr float minSpawnDistance = 200.f;
 constexpr float maxSpawnDistance = 500.f;
 constexpr uint32_t maxProjectileCount = 200;
-constexpr float projectileDamage = 5.f;
+constexpr float projectileDamage = 30.f;
 }
