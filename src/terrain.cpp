@@ -35,9 +35,8 @@ void Terrain::BuildGridMap()
 
 void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
 {
-    auto layerIndex = size_t{0};
     for (auto* layerNode = map->FirstChildElement("layer"); layerNode;
-         layerNode = layerNode->NextSiblingElement("layer"), ++layerIndex)
+         layerNode = layerNode->NextSiblingElement("layer"))
     {
         Layer layer;
         layer.data = GetDataFromLayer(layerNode);
@@ -109,11 +108,11 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
                         m_DepthBatches.begin(),
                         m_DepthBatches.end(),
                         [&](const auto& item)
-                        { return item.depth == depth && item.texture == ts.tex && item.layerIndex == layerIndex; });
+                        { return item.depth == depth && item.texture == ts.tex; });
                     if (batch == m_DepthBatches.end())
                     {
                         m_DepthBatches.push_back(
-                            {sf::VertexArray(sf::PrimitiveType::Triangles), ts.tex, depth, layerIndex});
+                            {sf::VertexArray(sf::PrimitiveType::Triangles), ts.tex, depth});
                         batch = std::prev(m_DepthBatches.end());
                     }
                     for (const auto& vertex : depthVertices)
@@ -133,8 +132,7 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
         m_DepthBatches.end(),
         [](const auto& left, const auto& right)
         {
-            if (left.depth != right.depth) return left.depth < right.depth;
-            return left.layerIndex < right.layerIndex;
+            return left.depth < right.depth;
         });
 }
 

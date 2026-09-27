@@ -1,4 +1,5 @@
 #include "enemy.hpp"
+#include "global_config.hpp"
 #include "terrain.hpp"
 
 #include <algorithm>
@@ -139,8 +140,7 @@ void Enemy::OnUpdate(float dt)
     m_AttackTimer += dt;
     if (m_AttackTimer >= m_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))
     {
-        constexpr auto attackDamage = 10.0f;
-        m_Target->TakeDamage(attackDamage);
+        m_Target->TakeDamage(config::enemyAttackDamage);
         m_AttackTimer = 0.0f;
     }
 }
@@ -158,4 +158,3 @@ void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(m_HpBar, snappedStates);
 }
 }
-

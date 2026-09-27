@@ -19,7 +19,6 @@ Player::Player()
     m_Sprite = std::make_unique<sf::Sprite>(m_AnimationTextures["idle_down"]);
     const auto textureHeight = m_Sprite->getTextureRect().size.y;
     m_Sprite->setTextureRect(sf::IntRect({16, 16}, {32, 32}));
-    // Measured pivot keeps the artwork aligned when flipping horizontally.
     m_Sprite->setOrigin({16 / 2.f, textureHeight / 2.f});
     m_Sprite->setPosition(config::playerInitialPosition);
 
@@ -38,7 +37,6 @@ auto Player::GetBounds() const -> sf::FloatRect
 
 auto Player::GetFeetBounds() const -> sf::FloatRect
 {
-    // Anchored to the feet, independent of animation frames and facing direction.
     return {m_Sprite->getPosition() + sf::Vector2f(-5.f, -6.f), {10.f, 6.f}};
 }
 
@@ -154,4 +152,3 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(*m_Sprite, snappedStates);
 }
 }
-

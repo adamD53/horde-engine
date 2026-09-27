@@ -5,6 +5,7 @@
 #include "menu_state.hpp"
 #include "state_machine.hpp"
 
+#include <iostream>
 #include <memory>
 #include <utility>
 
@@ -17,13 +18,9 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     m_Camera = std::make_unique<Camera>(m_Window);
     m_Window.setView(m_Camera->GetViewPoint());
 
-    m_Tilesets.emplace(std::pair("Water", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Water_tiles.png")));
     m_Tilesets.emplace(
-        std::pair("Floors_Tiles", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Floors_Tiles.png")));
+        std::pair("hyptosis_tile-art-batch-1", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Tiles.png")));
     m_Tilesets.emplace(std::pair("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png")));
-    m_Tilesets.emplace(std::pair("Props", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Props.png")));
-    m_Tilesets.emplace(std::pair("Roofs", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Roofs.png")));
-    m_Tilesets.emplace(std::pair("Walls", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Walls.png")));
     m_Terrain.Load(RESOURCES_PATH "world/map.tmx", m_Tilesets);
     m_Player.SetTerrain(m_Terrain);
 
@@ -61,18 +58,19 @@ void GameState::OnUpdate(float dt)
     m_EnemyPositions.reserve(activeEnemies.size());
     for (const auto& enemyVariant : activeEnemies)
     {
-        std::visit([&](const auto& enemy) {
-            m_EnemyPositions.push_back(enemy.GetPos());
-        }, enemyVariant);
+        std::visit([&](const auto& enemy) { m_EnemyPositions.push_back(enemy.GetPos()); }, enemyVariant);
     }
 
     for (auto& enemyVariant : activeEnemies)
     {
-        std::visit([&](auto& enemy) {
-            enemy.SetSwarm(m_EnemyPositions);
-            enemy.OnUpdate(dt);
-            m_Player.CheckForCollision(&enemy);
-        }, enemyVariant);
+        std::visit(
+            [&](auto& enemy)
+            {
+                enemy.SetSwarm(m_EnemyPositions);
+                enemy.OnUpdate(dt);
+                m_Player.CheckForCollision(&enemy);
+            },
+            enemyVariant);
     }
 
     m_Timer += dt;
@@ -97,14 +95,17 @@ void GameState::OnUpdate(float dt)
         for (auto& enemyVariant : activeEnemies)
         {
             auto hit = false;
-            std::visit([&](auto& enemy) {
-                if (!enemy.IsDead() && projBounds.findIntersection(enemy.GetBounds()))
+            std::visit(
+                [&](auto& enemy)
                 {
-                    enemy.TakeDamage(config::projectileDamage);
-                    projectile.SetDead(true);
-                    hit = true;
-                }
-            }, enemyVariant);
+                    if (!enemy.IsDead() && projBounds.findIntersection(enemy.GetBounds()))
+                    {
+                        enemy.TakeDamage(config::projectileDamage);
+                        projectile.SetDead(true);
+                        hit = true;
+                    }
+                },
+                enemyVariant);
             if (hit)
             {
                 break;
@@ -112,19 +113,15 @@ void GameState::OnUpdate(float dt)
         }
     }
 
-    m_ProjectilePool.RemoveIf([this](const auto& proj) {
-        return proj.IsDead() || CheckForBounds(proj.GetPos());
-    });
+    m_ProjectilePool.RemoveIf([this](const auto& proj) { return proj.IsDead() || CheckForBounds(proj.GetPos()); });
 
-    m_EnemyPool.RemoveIf([](const auto& enemyVariant) {
-        return std::visit([](const auto& enemy) {
-            return enemy.IsDead();
-        }, enemyVariant);
-    });
+    m_EnemyPool.RemoveIf([](const auto& enemyVariant)
+                         { return std::visit([](const auto& enemy) { return enemy.IsDead(); }, enemyVariant); });
 
     if (m_EnemyPool.GetCount() == 0)
     {
         m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
+        std::cout << "Wave count: " << m_EnemyPool.GetCount() << "\n";
     }
 
     m_PlayerGUI->Update(m_Player.GetHealthPoints(), m_Player.GetMaxHealthPoints());
@@ -147,11 +144,14 @@ void GameState::OnRender(sf::RenderWindow& window)
 
     for (const auto& enemyVariant : activeEnemies)
     {
-        std::visit([&](const auto& enemy) {
-            const auto bounds = enemy.GetBounds();
-            const auto feetY = bounds.position.y + bounds.size.y;
-            m_DepthActors.push_back({&enemy, feetY});
-        }, enemyVariant);
+        std::visit(
+            [&](const auto& enemy)
+            {
+                const auto bounds = enemy.GetBounds();
+                const auto feetY = bounds.position.y + bounds.size.y;
+                m_DepthActors.push_back({&enemy, feetY});
+            },
+            enemyVariant);
     }
 
     m_Terrain.DrawWithActors(window, m_DepthActors);
@@ -180,4 +180,3 @@ void GameState::OnEvent(const sf::Event& event)
     }
 }
 }
-

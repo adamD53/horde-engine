@@ -4,7 +4,7 @@
 
 auto main() -> int
 {
-    const auto specification = horde::GameSpecification{1280, 720, "title"};
+    const auto specification = horde::GameSpecification{2560, 1440, "title"};
 
     auto game = horde::Game{specification};
     game.Run();
