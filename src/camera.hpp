@@ -14,8 +14,12 @@ public:
     
     void SetUIViewPoint();
     void SetCenterPoint(const sf::Vector2f& centerPoint);
+    void Update(const sf::Vector2f& targetPosition, float dt);
 
 private:
+    auto ClampPosition(const sf::Vector2f& position) const -> sf::Vector2f;
+
     sf::View m_View, m_UIView;
+    sf::Vector2f m_CenterPosition;
 };
 }

@@ -10,6 +10,7 @@ Camera::Camera(sf::RenderWindow& window)
 {
     m_View = window.getDefaultView();
     m_View.zoom(config::cameraZoomLevel);
+    m_CenterPosition = m_View.getCenter();
 }
 
 auto Camera::GetViewPoint() const -> sf::View
@@ -22,7 +23,7 @@ auto Camera::GetUIViewPoint() const -> sf::View
     return m_UIView;
 }
 
-void Camera::SetCenterPoint(const sf::Vector2f& centerPoint)
+auto Camera::ClampPosition(const sf::Vector2f& position) const -> sf::Vector2f
 {
     const auto viewHalfSize = m_View.getSize() / 2.f;
 
@@ -31,10 +32,27 @@ void Camera::SetCenterPoint(const sf::Vector2f& centerPoint)
     const auto minY = static_cast<float>(config::topBound) + viewHalfSize.y;
     const auto maxY = static_cast<float>(config::bottomBound) - viewHalfSize.y;
 
-    const auto clampedX = std::clamp(centerPoint.x, minX, maxX);
-    const auto clampedY = std::clamp(centerPoint.y, minY, maxY);
+    const auto clampedX = std::clamp(position.x, minX, maxX);
+    const auto clampedY = std::clamp(position.y, minY, maxY);
 
-    m_View.setCenter({std::round(clampedX), std::round(clampedY)});
+    return {clampedX, clampedY};
+}
+
+void Camera::SetCenterPoint(const sf::Vector2f& centerPoint)
+{
+    m_CenterPosition = ClampPosition(centerPoint);
+    m_View.setCenter(m_CenterPosition);
+}
+
+void Camera::Update(const sf::Vector2f& targetPosition, float dt)
+{
+    const auto clampedTarget = ClampPosition(targetPosition);
+    const auto factor = 1.0f - std::exp(-config::cameraSmoothSpeed * dt);
+
+    m_CenterPosition.x = std::lerp(m_CenterPosition.x, clampedTarget.x, factor);
+    m_CenterPosition.y = std::lerp(m_CenterPosition.y, clampedTarget.y, factor);
+
+    m_View.setCenter(m_CenterPosition);
 }
 
 void Camera::SetUIViewPoint()

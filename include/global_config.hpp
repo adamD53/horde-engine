@@ -12,6 +12,7 @@ constexpr uint32_t bottomBound = 800;
 constexpr uint32_t playerTextureHeight = 32;
 constexpr uint32_t playerTextureWidth = 32;
 constexpr float cameraZoomLevel = 0.3f;
+constexpr float cameraSmoothSpeed = 5.f;
 constexpr float shootingDelay = 0.1f;
 constexpr float projectileSpeed = 200.f;
 constexpr sf::Vector2f playerInitialPosition{536.f, 300.f};

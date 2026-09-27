@@ -16,6 +16,7 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     , m_Window(window)
 {
     m_Camera = std::make_unique<Camera>(m_Window);
+    m_Camera->SetCenterPoint(m_Player.GetPos());
     m_Window.setView(m_Camera->GetViewPoint());
 
     m_Tilesets.emplace(
@@ -50,7 +51,7 @@ auto GameState::CheckForBounds(const sf::Vector2f& position) const -> bool
 void GameState::OnUpdate(float dt)
 {
     m_Player.OnUpdate(dt);
-    m_Camera->SetCenterPoint(m_Player.GetPos());
+    m_Camera->Update(m_Player.GetPos(), dt);
 
     const auto activeEnemies = m_EnemyPool.GetActive();
 

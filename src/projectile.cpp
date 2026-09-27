@@ -38,13 +38,7 @@ auto Projectile::GetPos() const -> sf::Vector2f
 
 void Projectile::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    const auto pos = m_Sprite.getPosition();
-    const auto offset = sf::Vector2f{std::round(pos.x) - pos.x, std::round(pos.y) - pos.y};
-
-    auto snappedStates = states;
-    snappedStates.transform.translate(offset);
-
-    target.draw(m_Sprite, snappedStates);
+    target.draw(m_Sprite, states);
 }
 
 void Projectile::SetPosition(const sf::Vector2f& position)

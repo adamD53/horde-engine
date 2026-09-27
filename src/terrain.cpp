@@ -88,18 +88,24 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
                 auto depthVertices = std::array<sf::Vertex, 6>{};
                 auto* v = ts.depthSorted ? depthVertices.data() : &layer.vertices[tsIndex][base];
 
+                constexpr auto eps = 0.01f;
+                const auto left = tx + eps;
+                const auto right = tx + ts.tileW - eps;
+                const auto top = ty + eps;
+                const auto bottom = ty + ts.tileH - eps;
+
                 v[0] = sf::Vertex{{px, py}};
-                v[0].texCoords = {tx, ty};
+                v[0].texCoords = {left, top};
                 v[1] = sf::Vertex{{px + ts.tileW, py}};
-                v[1].texCoords = {tx + ts.tileW, ty};
+                v[1].texCoords = {right, top};
                 v[2] = sf::Vertex{{px + ts.tileW, py + ts.tileH}};
-                v[2].texCoords = {tx + ts.tileW, ty + ts.tileH};
+                v[2].texCoords = {right, bottom};
                 v[3] = sf::Vertex{{px, py}};
-                v[3].texCoords = {tx, ty};
+                v[3].texCoords = {left, top};
                 v[4] = sf::Vertex{{px + ts.tileW, py + ts.tileH}};
-                v[4].texCoords = {tx + ts.tileW, ty + ts.tileH};
+                v[4].texCoords = {right, bottom};
                 v[5] = sf::Vertex{{px, py + ts.tileH}};
-                v[5].texCoords = {tx, ty + ts.tileH};
+                v[5].texCoords = {left, bottom};
 
                 if (ts.depthSorted)
                 {
