@@ -35,7 +35,7 @@ auto EnemySpawner::GenerateSpawnPosition(const sf::Vector2f& center) -> sf::Vect
     auto angleDist = std::uniform_real_distribution<float>{0.f, 2.f * std::numbers::pi_v<float>};
     auto radiusDist = std::uniform_real_distribution<float>{config::minSpawnDistance, config::maxSpawnDistance};
 
-    constexpr auto enemySize = 50.f;
+    constexpr auto enemySize = 32.f;
     constexpr auto margin = 20.f;
 
     const auto minX = static_cast<float>(config::leftBound) + margin;

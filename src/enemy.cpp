@@ -4,48 +4,73 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace horde
 {
-Enemy::Enemy()
+auto Enemy::GetTexture() -> const sf::Texture&
 {
-    m_Sprite.setSize({50.f, 50.f});
-    m_Sprite.setFillColor(sf::Color::Red);
+    static sf::Texture texture;
+    static bool loaded = false;
+    if (!loaded)
+    {
+        if (!texture.loadFromFile(RESOURCES_PATH "enemies/bat.png"))
+        {
+            throw std::runtime_error("Failed to load bat texture: " RESOURCES_PATH "enemies/bat.png");
+        }
+        loaded = true;
+    }
+    return texture;
+}
 
-    m_HpBackgroundBar.setSize({44.f, 5.f});
-    m_HpBackgroundBar.setFillColor(sf::Color(20, 20, 20));
-    m_HpBackgroundBar.setOutlineThickness(1.f);
+Enemy::Enemy()
+    : m_Sprite(GetTexture())
+{
+    m_Sprite.setOrigin(s_SpriteOrigin);
+
+    m_HpBackgroundBar.setSize(s_HpBarSize);
+    m_HpBackgroundBar.setFillColor(s_HpBackgroundColor);
+    m_HpBackgroundBar.setOutlineThickness(s_HpBarOutlineThickness);
     m_HpBackgroundBar.setOutlineColor(sf::Color::Black);
 
-    m_HpBar.setSize({44.f, 5.f});
+    m_HpBar.setSize(s_HpBarSize);
     m_HpBar.setFillColor(sf::Color::Green);
+
+    m_Animator.AddState(EnemyState::FlyUp, {0, 0, s_FrameCount, s_FrameDuration, true});
+    m_Animator.AddState(EnemyState::FlyRight, {1, 0, s_FrameCount, s_FrameDuration, true});
+    m_Animator.AddState(EnemyState::FlyDown, {2, 0, s_FrameCount, s_FrameDuration, true});
+    m_Animator.AddState(EnemyState::FlyLeft, {3, 0, s_FrameCount, s_FrameDuration, true});
+
+    m_Animator.Play(EnemyState::FlyDown);
+    m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
 }
 
 void Enemy::Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain)
 {
     m_Target = &target;
     m_Terrain = &terrain;
-    m_Health = m_MaxHealth;
-    m_AttackTimer = m_AttackCooldown;
+    m_Health = s_MaxHealth;
+    m_AttackTimer = s_AttackCooldown;
 
-    auto dist_speed = std::uniform_int_distribution<int>{50, 100};
+    auto dist_speed = std::uniform_int_distribution<int>{s_MinSpeed, s_MaxSpeed};
     m_Speed = static_cast<float>(dist_speed(s_RandomDevice));
 
     m_Sprite.setPosition(spawnPosition);
 
-    m_HpBar.setSize({44.f, 5.f});
+    m_HpBar.setSize(s_HpBarSize);
     m_HpBar.setFillColor(sf::Color::Green);
-}
 
-void Enemy::SetTerrain(const Terrain& terrain)
-{
-    m_Terrain = &terrain;
+    m_CurrentState = EnemyState::FlyDown;
+    m_Animator.Play(EnemyState::FlyDown);
+    m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
 }
 
 auto Enemy::GetFeetBounds() const -> sf::FloatRect
 {
     const auto bounds = GetBounds();
-    return {{bounds.position.x + 5.f, bounds.position.y + bounds.size.y - 15.f}, {bounds.size.x - 10.f, 15.f}};
+    return {
+        {bounds.position.x + s_FeetInsetX, bounds.position.y + bounds.size.y - s_FeetHeight},
+        {bounds.size.x - (s_FeetInsetX * 2.f), s_FeetHeight}};
 }
 
 void Enemy::SetSwarm(std::span<const sf::Vector2f> swarmPositions)
@@ -60,7 +85,6 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
         return {0.f, 0.f};
     }
 
-    constexpr auto separationRadius = 45.f;
     auto separation = sf::Vector2f{0.f, 0.f};
     const auto currentPos = GetPos();
 
@@ -69,9 +93,9 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
         const auto diff = currentPos - peerPos;
         const auto distance = diff.length();
 
-        if (distance > 0.001f && distance < separationRadius)
+        if (distance > 0.001f && distance < s_SeparationRadius)
         {
-            separation += (diff / distance) * (1.f - (distance / separationRadius));
+            separation += (diff / distance) * (1.f - (distance / s_SeparationRadius));
         }
     }
 
@@ -105,23 +129,31 @@ auto Enemy::GetHealth() const -> float
 
 auto Enemy::GetMaxHealth() const -> float
 {
-    return m_MaxHealth;
+    return s_MaxHealth;
 }
 
 void Enemy::OnUpdate(float dt)
 {
     if (!m_Target) return;
 
-    const auto toTarget = m_Target->GetPos() - (GetPos() + sf::Vector2f(10.f, 10.f));
+    const auto toTarget = m_Target->GetPos() - GetPos();
     const auto chaseDirection = toTarget.length() > 0.001f ? toTarget.normalized() : sf::Vector2f{0.f, 0.f};
 
     const auto separationForce = CalculateSeparation();
-    constexpr auto separationWeight = 1.5f;
 
-    m_Direction = chaseDirection + (separationForce * separationWeight);
+    m_Direction = chaseDirection + (separationForce * s_SeparationWeight);
 
     if (m_Direction.length() > 0.001f)
     {
+        if (std::abs(m_Direction.x) > std::abs(m_Direction.y))
+        {
+            m_CurrentState = (m_Direction.x > 0.f) ? EnemyState::FlyRight : EnemyState::FlyLeft;
+        }
+        else
+        {
+            m_CurrentState = (m_Direction.y > 0.f) ? EnemyState::FlyDown : EnemyState::FlyUp;
+        }
+
         auto movement = m_Direction.normalized() * (dt * m_Speed);
         if (m_Terrain)
         {
@@ -130,15 +162,21 @@ void Enemy::OnUpdate(float dt)
         m_Sprite.move(movement);
     }
 
-    const auto hpPos = GetPos() + sf::Vector2f(3.f, -10.f);
+    m_Animator.Play(m_CurrentState);
+    m_Animator.Update(dt);
+    m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
+
+    const auto bounds = GetBounds();
+    const auto hpPos =
+        sf::Vector2f{bounds.position.x + (bounds.size.x - s_HpBarSize.x) * 0.5f, bounds.position.y - s_HpBarOffsetY};
     m_HpBackgroundBar.setPosition(hpPos);
     m_HpBar.setPosition(hpPos);
 
-    const auto healthRatio = std::clamp(m_Health / m_MaxHealth, 0.f, 1.f);
-    m_HpBar.setSize({44.f * healthRatio, 5.f});
+    const auto healthRatio = std::clamp(m_Health / s_MaxHealth, 0.f, 1.f);
+    m_HpBar.setSize({s_HpBarSize.x * healthRatio, s_HpBarSize.y});
 
     m_AttackTimer += dt;
-    if (m_AttackTimer >= m_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))
+    if (m_AttackTimer >= s_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))
     {
         m_Target->TakeDamage(config::enemyAttackDamage);
         m_AttackTimer = 0.0f;
