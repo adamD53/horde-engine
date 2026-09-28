@@ -5,24 +5,33 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace horde
 {
 Player::Player()
     : m_HealthPoints(100.f)
 {
-    m_AnimationTextures.emplace(std::make_pair("walk_down", sf::Texture(RESOURCES_PATH "player/Walk_Down-Sheet.png")));
-    m_AnimationTextures.emplace(std::make_pair("walk_up", sf::Texture(RESOURCES_PATH "player/Walk_Up-Sheet.png")));
-    m_AnimationTextures.emplace(std::make_pair("walk_side", sf::Texture(RESOURCES_PATH "player/Walk_Side-Sheet.png")));
-    m_AnimationTextures.emplace(std::make_pair("idle_down", sf::Texture(RESOURCES_PATH "player/Idle_Down-Sheet.png")));
+    if (!m_SpriteSheet.loadFromFile(RESOURCES_PATH "player/walk.png"))
+    {
+        throw std::runtime_error("Failed to load player texture: " RESOURCES_PATH "player/walk.png");
+    }
+    m_Sprite = std::make_unique<sf::Sprite>(m_SpriteSheet);
 
-    m_Sprite = std::make_unique<sf::Sprite>(m_AnimationTextures["idle_down"]);
-    const auto textureHeight = m_Sprite->getTextureRect().size.y;
-    m_Sprite->setTextureRect(sf::IntRect({16, 16}, {32, 32}));
-    m_Sprite->setOrigin({16 / 2.f, textureHeight / 2.f});
+    m_Sprite->setOrigin({32.f, 32.f});
+    m_Sprite->setScale({0.8f, 0.8f});
     m_Sprite->setPosition(config::playerInitialPosition);
 
-    m_Animation = std::make_unique<Animation>(0.2f);
+    m_Animator.AddState(PlayerState::IdleUp, {0, 0, 1, 0.2f, false});
+    m_Animator.AddState(PlayerState::WalkUp, {0, 1, 8, 0.1f, true});
+    m_Animator.AddState(PlayerState::IdleLeft, {1, 0, 1, 0.2f, false});
+    m_Animator.AddState(PlayerState::WalkLeft, {1, 1, 8, 0.1f, true});
+    m_Animator.AddState(PlayerState::IdleDown, {2, 0, 1, 0.2f, false});
+    m_Animator.AddState(PlayerState::WalkDown, {2, 1, 8, 0.1f, true});
+    m_Animator.AddState(PlayerState::IdleRight, {3, 0, 1, 0.2f, false});
+    m_Animator.AddState(PlayerState::WalkRight, {3, 1, 8, 0.1f, true});
+
+    m_Animator.Play(PlayerState::IdleDown);
 }
 
 void Player::SetTerrain(const Terrain& terrain)
@@ -32,7 +41,8 @@ void Player::SetTerrain(const Terrain& terrain)
 
 auto Player::GetBounds() const -> sf::FloatRect
 {
-    return m_Sprite->getGlobalBounds();
+    const auto pos = m_Sprite->getPosition();
+    return {sf::Vector2f(pos.x - 16.f, pos.y - 16.f), sf::Vector2f(32.f, 32.f)};
 }
 
 auto Player::GetFeetBounds() const -> sf::FloatRect
@@ -77,68 +87,54 @@ auto Player::CheckForCollision(const Entity* target) const -> bool
 void Player::OnUpdate(float dt)
 {
     auto direction = sf::Vector2f{0.0f, 0.0f};
-    auto currentAnimationFrameIndex = uint32_t{0};
-    auto animationRow = 0;
-
     const auto currentPos = GetPos();
-    m_CurrentState = PlayerState::IdleDown;
+    auto isMoving = false;
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && (currentPos.x > config::leftBound))
     {
         direction.x += -1.0f;
         m_CurrentState = PlayerState::WalkLeft;
+        isMoving = true;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && (currentPos.x < config::rightBound))
     {
         direction.x += 1.0f;
         m_CurrentState = PlayerState::WalkRight;
+        isMoving = true;
     }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && (currentPos.y > config::topBound))
     {
         direction.y += -1.0f;
         m_CurrentState = PlayerState::WalkUp;
+        isMoving = true;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && (currentPos.y < config::bottomBound))
     {
         direction.y += 1.0f;
         m_CurrentState = PlayerState::WalkDown;
+        isMoving = true;
     }
 
-    const auto framesCount = (m_CurrentState == PlayerState::IdleDown) ? 4u : 6u;
-    currentAnimationFrameIndex = m_Animation->Update(framesCount);
-    switch (m_CurrentState)
+    if (!isMoving)
     {
-        case PlayerState::IdleDown:
-            m_Sprite->setTexture(m_AnimationTextures["idle_down"]);
-            animationRow = 16;
-            break;
-        case PlayerState::WalkUp:
-            m_Sprite->setTexture(m_AnimationTextures["walk_up"]);
-            animationRow = 16;
-            break;
-        case PlayerState::WalkDown:
-            m_Sprite->setTexture(m_AnimationTextures["walk_down"]);
-            animationRow = 16;
-            break;
-        case PlayerState::WalkRight:
-            m_FacingRight = true;
-            m_Sprite->setTexture(m_AnimationTextures["walk_side"]);
-            animationRow = 16;
-            break;
-        case PlayerState::WalkLeft:
-            m_FacingRight = false;
-            m_Sprite->setTexture(m_AnimationTextures["walk_side"]);
-            animationRow = 16;
-            break;
+        switch (m_CurrentState)
+        {
+            case PlayerState::WalkUp: m_CurrentState = PlayerState::IdleUp; break;
+            case PlayerState::WalkLeft: m_CurrentState = PlayerState::IdleLeft; break;
+            case PlayerState::WalkDown: m_CurrentState = PlayerState::IdleDown; break;
+            case PlayerState::WalkRight: m_CurrentState = PlayerState::IdleRight; break;
+            default: break;
+        }
     }
 
-    const auto frameX = static_cast<int>(currentAnimationFrameIndex * m_TexStride);
-    m_Sprite->setTextureRect(
-        sf::IntRect({frameX, animationRow}, {config::playerTextureWidth, config::playerTextureHeight}));
+    m_Animator.Play(m_CurrentState);
+    m_Animator.Update(dt);
+    m_Animator.ApplyToSprite(*m_Sprite, {64, 64}, {64, 64});
 
     auto movement = (direction.length() <= 1 ? direction : direction.normalized()) * m_Speed * dt;
     if (m_Terrain) movement = m_Terrain->ResolveMovement(GetFeetBounds(), movement);
     m_Sprite->move(movement);
-    m_Sprite->setScale({(m_FacingRight ? 1.0f : -1.0f), 1.0f});
 }
 
 void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const

@@ -8,7 +8,7 @@ namespace horde
 Game::Game(const GameSpecification& spec)
 {
     m_Window.create(sf::VideoMode(sf::Vector2u(spec.width, spec.height)), spec.title);
-    m_Window.setVerticalSyncEnabled(true);
+    m_Window.setFramerateLimit(60);
 
     m_StateMachine.ChangeState(std::make_unique<MenuState>(m_StateMachine, m_Window));
     m_StateMachine.ProcessStateChange();

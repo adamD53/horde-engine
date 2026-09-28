@@ -1,5 +1,7 @@
 #pragma once
 
+#include "melee_combat_system.hpp"
+#include "global_config.hpp"
 #include "camera.hpp"
 #include "enemy.hpp"
 #include "enemy_spawner.hpp"
@@ -21,7 +23,12 @@
 
 namespace horde
 {
-using EntityVariant = std::variant<Enemy>;
+struct SwooshEffect
+{
+    sf::Angle rotation;
+    float currentLife{0.0f};
+    float maxLife{0.15f};
+};
 
 class StateMachine;
 
@@ -49,11 +56,13 @@ private:
     EnemySpawner m_EnemySpawner;
     Terrain m_Terrain;
     Player m_Player;
+    MeleeCombatSystem m_MeleeCombatSystem;
+    std::vector<SwooshEffect> m_SwooshEffects;
     std::vector<sf::Vector2f> m_EnemyPositions;
     std::vector<DepthActor> m_DepthActors;
     std::unordered_map<std::string, std::unique_ptr<sf::Texture>> m_Tilesets;
     std::unique_ptr<Camera> m_Camera;
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
-    float m_Timer{0.0f};
+    std::unique_ptr<sf::Sprite> m_SwooshSprite;
 };
 }

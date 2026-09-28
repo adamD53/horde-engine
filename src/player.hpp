@@ -10,12 +10,16 @@ namespace horde
 {
 enum class PlayerState
 {
-    IdleDown,
+    IdleUp,
     WalkUp,
+    IdleLeft,
+    WalkLeft,
+    IdleDown,
     WalkDown,
+    IdleRight,
     WalkRight,
-    WalkLeft
-}; // TODO: Add idle animation in all directions
+    Count
+};
 
 class Terrain;
 
@@ -37,14 +41,12 @@ public:
     auto CheckForCollision(const Entity* target) const -> bool;
 
 private:
-    std::unordered_map<std::string, sf::Texture> m_AnimationTextures;
+    sf::Texture m_SpriteSheet;
     sf::Texture m_WeaponTexture;
     std::unique_ptr<sf::Sprite> m_Sprite;
     std::unique_ptr<sf::Sprite> m_WeaponSprite;
-    std::unique_ptr<Animation> m_Animation;
+    Animator<PlayerState, static_cast<size_t>(PlayerState::Count)> m_Animator;
     PlayerState m_CurrentState = PlayerState::IdleDown;
-    bool m_FacingRight = false;
-    const uint32_t m_TexStride = 64;
     const float m_Speed = 150.0f;
     const float m_MaxHealthPoints = 100.0f;
     float m_HealthPoints = 100.0f;

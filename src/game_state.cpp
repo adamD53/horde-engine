@@ -5,8 +5,11 @@
 #include "menu_state.hpp"
 #include "state_machine.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <memory>
+#include <numbers>
 #include <utility>
 
 namespace horde
@@ -22,13 +25,16 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     m_Tilesets.emplace(
         std::pair("hyptosis_tile-art-batch-1", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Tiles.png")));
     m_Tilesets.emplace(std::pair("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png")));
+    m_Tilesets.emplace(std::pair("swoosh", std::make_unique<sf::Texture>(RESOURCES_PATH "weapons/swoosh.png")));
+    m_SwooshSprite = std::make_unique<sf::Sprite>(*m_Tilesets.at("swoosh"));
+    m_SwooshSprite->setOrigin({8.0f, 16.0f});
+    m_SwooshSprite->setScale({2.5f, 2.5f});
     m_Terrain.Load(RESOURCES_PATH "world/map.tmx", m_Tilesets);
     m_Player.SetTerrain(m_Terrain);
 
     m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
 
     m_EnemyPool.PreAllocate(config::maxEnemyCount);
-    m_ProjectilePool.PreAllocate(config::maxProjectileCount);
 
     m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
 }
@@ -74,19 +80,27 @@ void GameState::OnUpdate(float dt)
             enemyVariant);
     }
 
-    m_Timer += dt;
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_Timer > config::shootingDelay)
+    m_MeleeCombatSystem.Update(dt);
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_MeleeCombatSystem.CanAttack())
     {
         const auto mousePosition =
             m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window), m_Camera->GetViewPoint());
-        const auto direction =
-            sf::Vector2f{mousePosition.x - m_Player.GetPos().x, mousePosition.y - m_Player.GetPos().y};
-        if (auto* projectile = m_ProjectilePool.Acquire())
-        {
-            projectile->Spawn(m_Player.GetPos(), direction);
-        }
-        m_Timer = 0.0f;
+        const auto playerPos = m_Player.GetPos();
+        const auto toMouse = sf::Vector2f{mousePosition.x - playerPos.x, mousePosition.y - playerPos.y};
+        const auto aimAngle = std::atan2(toMouse.y, toMouse.x);
+
+        m_MeleeCombatSystem.Attack(playerPos, mousePosition, m_EnemyPool);
+
+        m_SwooshEffects.push_back(SwooshEffect{
+            .rotation = sf::radians(aimAngle),
+        });
     }
+
+    for (auto& effect : m_SwooshEffects)
+    {
+        effect.currentLife += dt;
+    }
+    std::erase_if(m_SwooshEffects, [](const auto& effect) { return effect.currentLife >= effect.maxLife; });
 
     auto activeProjectiles = m_ProjectilePool.GetActive();
     for (auto& projectile : activeProjectiles)
@@ -156,6 +170,16 @@ void GameState::OnRender(sf::RenderWindow& window)
     }
 
     m_Terrain.DrawWithActors(window, m_DepthActors);
+
+    for (const auto& effect : m_SwooshEffects)
+    {
+        const auto progress = effect.currentLife / effect.maxLife;
+        const auto frame = std::clamp(static_cast<int>(progress * 4.0f), 0, 3);
+        m_SwooshSprite->setTextureRect(sf::IntRect({frame * 32, 0}, {32, 32}));
+        m_SwooshSprite->setRotation(effect.rotation);
+        m_SwooshSprite->setPosition(m_Player.GetPos());
+        window.draw(*m_SwooshSprite);
+    }
 
     for (const auto& projectile : m_ProjectilePool.GetActive())
     {
