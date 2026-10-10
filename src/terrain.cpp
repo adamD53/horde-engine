@@ -40,21 +40,27 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
     {
         Layer layer;
         layer.data = GetDataFromLayer(layerNode);
-        layer.name = layerNode->FindAttribute("name")->Value();
+        if (const auto* nameAttr = layerNode->FindAttribute("name"))
+        {
+            layer.name = nameAttr->Value();
+        }
         std::vector<uint32_t> gids = ParseCSV(layer.data);
         if (gids.size() != static_cast<size_t>(m_MapWidth) * m_MapHeight)
             throw std::runtime_error("Tile layer has an incorrect number of cells: " + layer.name);
 
         std::vector<size_t> counts(m_Tilesets.size(), 0);
-        for (const auto gid : gids)
+        for (const auto rawGid : gids)
+        {
+            const auto gid = rawGid & 0x1FFFFFFF;
             if (gid && gid < m_GidToTileset.size())
             {
                 const int idx = m_GidToTileset[gid];
                 if (idx >= 0) counts[idx]++;
             }
+        }
 
         layer.vertices.resize(m_Tilesets.size());
-        for (int i = 0; i < m_Tilesets.size(); ++i)
+        for (size_t i = 0; i < m_Tilesets.size(); ++i)
         {
             layer.vertices[i].setPrimitiveType(sf::PrimitiveType::Triangles);
             layer.vertices[i].resize(counts[i] * 6);
@@ -66,7 +72,8 @@ void Terrain::BuildLayerVertices(tinyxml2::XMLElement* map)
         {
             for (uint32_t x = 0; x < m_MapWidth; ++x)
             {
-                const uint32_t gid = gids[y * m_MapWidth + x];
+                const uint32_t rawGid = gids[y * m_MapWidth + x];
+                const uint32_t gid = rawGid & 0x1FFFFFFF;
                 if (!gid || gid >= m_GidToTileset.size()) continue;
                 const int tsIndex = m_GidToTileset[gid];
                 if (tsIndex < 0) continue;
@@ -252,6 +259,7 @@ auto Terrain::LoadXML(const std::string& tmx_file) -> tinyxml2::XMLElement*
     m_Layers.clear();
     m_DepthBatches.clear();
     m_GidToTileset.clear();
+    m_StaticEntities.clear();
     m_Document.Clear();
 
     if (m_Document.LoadFile(tmx_file.c_str()) != tinyxml2::XML_SUCCESS)
@@ -343,13 +351,23 @@ void Terrain::DrawWithActors(sf::RenderTarget& target, std::span<DepthActor> act
 
 void Terrain::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    for (int l = 0; l < m_Layers.size(); l++)
+    for (size_t l = 0; l < m_Layers.size(); ++l)
     {
-        for (int t = 0; t < m_Tilesets.size(); t++)
+        for (size_t t = 0; t < m_Tilesets.size(); ++t)
         {
             states.texture = m_Tilesets[t].tex;
             target.draw(m_Layers[l].vertices[t], states);
         }
     }
+}
+
+auto Terrain::GetSize() const -> sf::Vector2f
+{
+    return {static_cast<float>(m_MapWidth) * m_TileSize.x, static_cast<float>(m_MapHeight) * m_TileSize.y};
+}
+
+auto Terrain::IsBlocked(sf::FloatRect body) const -> bool
+{
+    return m_Collision.IsBlocked(body);
 }
 }

@@ -39,13 +39,21 @@ public:
         if (state.frameCount <= 1) return;
 
         m_ElapsedTime += dt;
-        if (m_ElapsedTime >= state.frameDuration)
+        if (state.frameDuration > 0.0f)
         {
-            m_ElapsedTime -= state.frameDuration;
-            m_CurrentFrame++;
-            if (m_CurrentFrame >= state.frameCount)
+            while (m_ElapsedTime >= state.frameDuration)
             {
-                m_CurrentFrame = state.loop ? 0 : state.frameCount - 1;
+                m_ElapsedTime -= state.frameDuration;
+                m_CurrentFrame++;
+                if (m_CurrentFrame >= state.frameCount)
+                {
+                    m_CurrentFrame = state.loop ? 0 : state.frameCount - 1;
+                    if (!state.loop)
+                    {
+                        m_ElapsedTime = 0.0f;
+                        break;
+                    }
+                }
             }
         }
     }

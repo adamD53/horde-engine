@@ -18,6 +18,7 @@ void CollisionGrid::Reset(unsigned width, unsigned height, sf::Vector2f tileSize
 
 void CollisionGrid::Add(unsigned x, unsigned y, sf::FloatRect bounds)
 {
+    if (x >= m_Width || y >= m_Height) return;
     bounds.position += sf::Vector2f(x * m_TileSize.x, y * m_TileSize.y);
     m_Cells.at(static_cast<size_t>(y) * m_Width + x).push_back(bounds);
 }

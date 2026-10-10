@@ -15,9 +15,9 @@ public:
     void SetPosition(const sf::Vector2f& position);
     void SetPlayerPosition(const sf::Vector2f& position);
     void OnUpdate(float dt) override;
-    auto GetPos() const -> sf::Vector2f override;
-    auto GetBounds() const -> sf::FloatRect override;
-    auto IsDead() const -> bool override;
+    [[nodiscard]] auto GetPos() const -> sf::Vector2f override;
+    [[nodiscard]] auto GetBounds() const -> sf::FloatRect override;
+    [[nodiscard]] auto IsDead() const -> bool override;
     void SetDead(bool dead);
 
 private:
@@ -26,7 +26,6 @@ private:
     float m_Speed;
     bool m_IsDead = false;
     sf::CircleShape m_Sprite;
-    sf::Texture m_Texture;
 
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

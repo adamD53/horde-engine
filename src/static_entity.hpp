@@ -8,14 +8,14 @@ namespace horde
 class StaticEntity : public Entity
 {
 public:
-    StaticEntity(float posX, float posY, float texX, float texY, const sf::Texture* texture);
-    ~StaticEntity() = default;
+    StaticEntity(float posX, float posY, float texX, float texY, const sf::Texture& texture);
+    ~StaticEntity() override = default;
 
 public:
-    auto GetSprite() -> sf::Sprite&;
-    auto GetSprite() const -> const sf::Sprite&;
-    auto GetPos() const -> sf::Vector2f override;
-    auto GetBounds() const -> sf::FloatRect override;
+    [[nodiscard]] auto GetSprite() -> sf::Sprite&;
+    [[nodiscard]] auto GetSprite() const -> const sf::Sprite&;
+    [[nodiscard]] auto GetPos() const -> sf::Vector2f override;
+    [[nodiscard]] auto GetBounds() const -> sf::FloatRect override;
 
 private:
     float m_PosX, m_PosY, m_TexX, m_TexY;

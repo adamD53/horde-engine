@@ -87,29 +87,28 @@ auto Player::CheckForCollision(const Entity* target) const -> bool
 void Player::OnUpdate(float dt)
 {
     auto direction = sf::Vector2f{0.0f, 0.0f};
-    const auto currentPos = GetPos();
     auto isMoving = false;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) && (currentPos.x > config::leftBound))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
     {
         direction.x += -1.0f;
         m_CurrentState = PlayerState::WalkLeft;
         isMoving = true;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) && (currentPos.x < config::rightBound))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
     {
         direction.x += 1.0f;
         m_CurrentState = PlayerState::WalkRight;
         isMoving = true;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) && (currentPos.y > config::topBound))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
     {
         direction.y += -1.0f;
         m_CurrentState = PlayerState::WalkUp;
         isMoving = true;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && (currentPos.y < config::bottomBound))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
     {
         direction.y += 1.0f;
         m_CurrentState = PlayerState::WalkDown;
@@ -134,6 +133,22 @@ void Player::OnUpdate(float dt)
 
     auto movement = (direction.length() <= 1 ? direction : direction.normalized()) * m_Speed * dt;
     if (m_Terrain) movement = m_Terrain->ResolveMovement(GetFeetBounds(), movement);
+    if (m_Terrain)
+    {
+        const auto currentPosition = m_Sprite->getPosition();
+        const auto spriteSize = m_Sprite->getGlobalBounds().size;
+        const auto halfSize = spriteSize / 2.f;
+        const auto terrainSize = m_Terrain->GetSize();
+        const auto nextPosition = currentPosition + movement;
+        const auto minX = std::min(halfSize.x, terrainSize.x / 2.f);
+        const auto minY = std::min(halfSize.y, terrainSize.y / 2.f);
+        const auto maxX = std::max(minX, terrainSize.x - halfSize.x);
+        const auto maxY = std::max(minY, terrainSize.y - halfSize.y);
+        const auto clampedPosition = sf::Vector2f{
+            std::clamp(nextPosition.x, minX, maxX),
+            std::clamp(nextPosition.y, minY, maxY)};
+        movement = clampedPosition - currentPosition;
+    }
     m_Sprite->move(movement);
 }
 

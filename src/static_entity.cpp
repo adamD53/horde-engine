@@ -2,12 +2,12 @@
 
 namespace horde
 {
-StaticEntity::StaticEntity(float posX, float posY, float texX, float texY, const sf::Texture* texture)
+StaticEntity::StaticEntity(float posX, float posY, float texX, float texY, const sf::Texture& texture)
     : m_PosX(posX)
     , m_PosY(posY)
     , m_TexX(texX)
     , m_TexY(texY)
-    , m_Sprite(*texture)
+    , m_Sprite(texture)
 {
     m_Sprite.setTextureRect(sf::IntRect({static_cast<int>(m_TexX), static_cast<int>(m_TexY)}, {16, 16}));
     m_Sprite.setPosition({m_PosX, m_PosY});

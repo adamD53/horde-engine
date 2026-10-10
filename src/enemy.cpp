@@ -147,7 +147,7 @@ void Enemy::OnUpdate(float dt)
     {
         if (std::abs(m_Direction.x) > std::abs(m_Direction.y))
         {
-            m_CurrentState = (m_Direction.x > 0.f) ? EnemyState::FlyRight : EnemyState::FlyLeft;
+            m_CurrentState = (m_Direction.x > 0.f) ? EnemyState::FlyLeft : EnemyState::FlyRight;
         }
         else
         {

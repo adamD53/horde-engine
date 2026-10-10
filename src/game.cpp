@@ -1,7 +1,9 @@
 #include "game.hpp"
 #include "menu_state.hpp"
 
+#include <algorithm>
 #include <memory>
+#include <optional>
 
 namespace horde
 {
@@ -37,14 +39,12 @@ void Game::Run()
 
         m_StateMachine.ProcessStateChange();
 
-        const auto dt = clock.restart().asSeconds();
+        const auto dt = std::min(clock.restart().asSeconds(), 0.1f);
 
         if (auto* state = m_StateMachine.GetActiveState())
         {
             state->OnUpdate(dt);
         }
-
-        m_Window.clear();
 
         if (auto* state = m_StateMachine.GetActiveState())
         {

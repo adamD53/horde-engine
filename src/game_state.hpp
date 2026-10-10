@@ -9,7 +9,6 @@
 #include "object_pool.hpp"
 #include "player.hpp"
 #include "player_gui.hpp"
-#include "projectile.hpp"
 #include "state.hpp"
 #include "terrain.hpp"
 
@@ -45,14 +44,10 @@ public:
     void OnEvent(const sf::Event& event) override;
 
 private:
-    [[nodiscard]] auto CheckForBounds(const sf::Vector2f& position) const -> bool;
-
-private:
     StateMachine& m_StateMachine;
     sf::RenderWindow& m_Window;
 
     ObjectPool<EntityVariant> m_EnemyPool;
-    ObjectPool<Projectile> m_ProjectilePool;
     EnemySpawner m_EnemySpawner;
     Terrain m_Terrain;
     Player m_Player;

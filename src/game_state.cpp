@@ -22,10 +22,9 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     m_Camera->SetCenterPoint(m_Player.GetPos());
     m_Window.setView(m_Camera->GetViewPoint());
 
-    m_Tilesets.emplace(
-        std::pair("hyptosis_tile-art-batch-1", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Tiles.png")));
-    m_Tilesets.emplace(std::pair("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png")));
-    m_Tilesets.emplace(std::pair("swoosh", std::make_unique<sf::Texture>(RESOURCES_PATH "weapons/swoosh.png")));
+    m_Tilesets.emplace("hyptosis_tile-art-batch-1", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Tiles.png"));
+    m_Tilesets.emplace("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png"));
+    m_Tilesets.emplace("swoosh", std::make_unique<sf::Texture>(RESOURCES_PATH "weapons/swoosh.png"));
     m_SwooshSprite = std::make_unique<sf::Sprite>(*m_Tilesets.at("swoosh"));
     m_SwooshSprite->setOrigin({8.0f, 16.0f});
     m_SwooshSprite->setScale({2.5f, 2.5f});
@@ -45,13 +44,6 @@ void GameState::OnEnter()
 
 void GameState::OnExit()
 {
-}
-
-auto GameState::CheckForBounds(const sf::Vector2f& position) const -> bool
-{
-    if (position.x <= config::leftBound || position.x >= config::rightBound) return true;
-    if (position.y <= config::topBound || position.y >= config::bottomBound) return true;
-    return false;
 }
 
 void GameState::OnUpdate(float dt)
@@ -102,34 +94,6 @@ void GameState::OnUpdate(float dt)
     }
     std::erase_if(m_SwooshEffects, [](const auto& effect) { return effect.currentLife >= effect.maxLife; });
 
-    auto activeProjectiles = m_ProjectilePool.GetActive();
-    for (auto& projectile : activeProjectiles)
-    {
-        projectile.OnUpdate(dt);
-        const auto projBounds = projectile.GetBounds();
-        for (auto& enemyVariant : activeEnemies)
-        {
-            auto hit = false;
-            std::visit(
-                [&](auto& enemy)
-                {
-                    if (!enemy.IsDead() && projBounds.findIntersection(enemy.GetBounds()))
-                    {
-                        enemy.TakeDamage(config::projectileDamage);
-                        projectile.SetDead(true);
-                        hit = true;
-                    }
-                },
-                enemyVariant);
-            if (hit)
-            {
-                break;
-            }
-        }
-    }
-
-    m_ProjectilePool.RemoveIf([this](const auto& proj) { return proj.IsDead() || CheckForBounds(proj.GetPos()); });
-
     m_EnemyPool.RemoveIf([](const auto& enemyVariant)
                          { return std::visit([](const auto& enemy) { return enemy.IsDead(); }, enemyVariant); });
 
@@ -149,13 +113,15 @@ void GameState::OnUpdate(float dt)
 
 void GameState::OnRender(sf::RenderWindow& window)
 {
+    window.clear();
     window.setView(m_Camera->GetViewPoint());
 
     const auto activeEnemies = m_EnemyPool.GetActive();
     m_DepthActors.clear();
     m_DepthActors.reserve(1 + activeEnemies.size());
 
-    m_DepthActors.push_back({&m_Player, m_Player.GetPos().y});
+    const auto playerBounds = m_Player.GetBounds();
+    m_DepthActors.push_back({&m_Player, playerBounds.position.y + playerBounds.size.y});
 
     for (const auto& enemyVariant : activeEnemies)
     {
@@ -179,11 +145,6 @@ void GameState::OnRender(sf::RenderWindow& window)
         m_SwooshSprite->setRotation(effect.rotation);
         m_SwooshSprite->setPosition(m_Player.GetPos());
         window.draw(*m_SwooshSprite);
-    }
-
-    for (const auto& projectile : m_ProjectilePool.GetActive())
-    {
-        window.draw(projectile);
     }
 
     window.setView(window.getDefaultView());

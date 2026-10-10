@@ -27,24 +27,26 @@ class Player : public Entity
 {
 public:
     Player();
-    ~Player() = default;
+    ~Player() override = default;
+    Player(const Player&) = delete;
+    Player& operator=(const Player&) = delete;
+    Player(Player&&) = delete;
+    Player& operator=(Player&&) = delete;
 
     void OnUpdate(float dt) override;
     void SetTerrain(const Terrain& terrain);
-    auto GetFeetBounds() const -> sf::FloatRect;
-    auto GetPos() const -> sf::Vector2f override;
-    auto GetHealthPoints() const -> float;
-    auto GetMaxHealthPoints() const -> float;
     void TakeDamage(float amount) override;
-    auto IsDead() const -> bool override;
-    auto GetBounds() const -> sf::FloatRect override;
     auto CheckForCollision(const Entity* target) const -> bool;
+    [[nodiscard]] auto GetFeetBounds() const -> sf::FloatRect;
+    [[nodiscard]] auto GetPos() const -> sf::Vector2f override;
+    [[nodiscard]] auto GetHealthPoints() const -> float;
+    [[nodiscard]] auto GetMaxHealthPoints() const -> float;
+    [[nodiscard]] auto IsDead() const -> bool override;
+    [[nodiscard]] auto GetBounds() const -> sf::FloatRect override;
 
 private:
     sf::Texture m_SpriteSheet;
-    sf::Texture m_WeaponTexture;
     std::unique_ptr<sf::Sprite> m_Sprite;
-    std::unique_ptr<sf::Sprite> m_WeaponSprite;
     Animator<PlayerState, static_cast<size_t>(PlayerState::Count)> m_Animator;
     PlayerState m_CurrentState = PlayerState::IdleDown;
     const float m_Speed = 150.0f;

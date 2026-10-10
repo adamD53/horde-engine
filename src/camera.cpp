@@ -11,6 +11,7 @@ Camera::Camera(sf::RenderWindow& window)
     m_View = window.getDefaultView();
     m_View.zoom(config::cameraZoomLevel);
     m_CenterPosition = m_View.getCenter();
+    SetUIViewPoint();
 }
 
 auto Camera::GetViewPoint() const -> sf::View
@@ -32,8 +33,10 @@ auto Camera::ClampPosition(const sf::Vector2f& position) const -> sf::Vector2f
     const auto minY = static_cast<float>(config::topBound) + viewHalfSize.y;
     const auto maxY = static_cast<float>(config::bottomBound) - viewHalfSize.y;
 
-    const auto clampedX = std::clamp(position.x, minX, maxX);
-    const auto clampedY = std::clamp(position.y, minY, maxY);
+    const auto clampedX = (minX > maxX) ? static_cast<float>(config::leftBound + config::rightBound) * 0.5f
+                                        : std::clamp(position.x, minX, maxX);
+    const auto clampedY = (minY > maxY) ? static_cast<float>(config::topBound + config::bottomBound) * 0.5f
+                                        : std::clamp(position.y, minY, maxY);
 
     return {clampedX, clampedY};
 }

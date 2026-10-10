@@ -80,7 +80,7 @@ private:
     sf::Vector2f m_Direction;
     float m_AttackTimer = s_AttackCooldown;
 
-    inline static std::mt19937 s_RandomDevice;
+    inline static std::mt19937 s_RandomDevice{std::random_device{}()};
 
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

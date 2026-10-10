@@ -60,19 +60,24 @@ public:
         }
     }
 
-    auto GetActive() -> std::span<T>
+    [[nodiscard]] auto GetActive() -> std::span<T>
     {
         return std::span<T>{m_Data.data(), m_ActiveCount};
     }
 
-    auto GetActive() const -> std::span<const T>
+    [[nodiscard]] auto GetActive() const -> std::span<const T>
     {
         return std::span<const T>{m_Data.data(), m_ActiveCount};
     }
 
-    auto GetCount() const -> size_t
+    [[nodiscard]] auto GetCount() const -> size_t
     {
         return m_ActiveCount;
+    }
+
+    void Clear()
+    {
+        m_ActiveCount = 0;
     }
 
 private:

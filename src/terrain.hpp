@@ -57,9 +57,8 @@ public:
     auto GetStaticEntities() const -> const std::vector<std::unique_ptr<Entity>>&;
     auto ResolveMovement(sf::FloatRect feet, sf::Vector2f movement) const -> sf::Vector2f;
     void DrawWithActors(sf::RenderTarget& target, std::span<DepthActor> actors) const;
-    auto GetSize() const -> sf::Vector2f;
-    auto IsBlocked(sf::FloatRect body) const -> bool;
-    auto FindPath(sf::Vector2f start, sf::Vector2f goal, sf::Vector2f bodySize) const -> std::vector<sf::Vector2f>;
+    [[nodiscard]] auto GetSize() const -> sf::Vector2f;
+    [[nodiscard]] auto IsBlocked(sf::FloatRect body) const -> bool;
 
 private:
     std::vector<Tileset> m_Tilesets;
