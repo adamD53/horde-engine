@@ -1,16 +1,22 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.28)
+
+project(mygame LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #! ! ! ! ! ! !
 #set this to true to ship the game!
 #basically this will change the RESOURCES_PATH to be the local path
 #! ! ! ! ! ! !
 #DELETE THE OUT FOLDER AFTER CHANGING THIS BECAUSE VISUAL STUDIO DOESN'T SEEM TO RECOGNIZE THIS CHANGE AND REBUILD!
-option(PRODUCTION_BUILD "Make this a production build!" OFF)
-#DELETE THE OUT FOLDER AFTER CHANGING THIS BECAUSE VISUAL STUDIO DOESN'T SEEM TO RECOGNIZE THIS CHANGE AND REBUILD!
+option(PRODUCTION_BUILD "Use a relative resource path for a production build" OFF)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebug>$<$<CONFIG:Release>:MultiThreaded>")
+if(MSVC)
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebug>$<$<CONFIG:Release>:MultiThreaded>")
+endif()
 
 # set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) #link time optimization
 
@@ -23,8 +29,6 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build SFML as static libraries" FORCE)
 if(MSVC) 
 	add_compile_options(/arch:AVX2) #make sure SIMD optimizations take place
 endif()
-
-project(mygame)
 
 #Add SFML, and here you would add other libraries if needed!
 add_subdirectory(thirdparty/SFML-3.0.2)
@@ -47,15 +51,11 @@ add_executable("${CMAKE_PROJECT_NAME}")
 
 set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY CXX_STANDARD 23)
 
-target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC
-    $<$<CONFIG:Debug>:RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/">
-    $<$<CONFIG:Debug>:PRODUCTION_BUILD=0>
-
-    $<$<CONFIG:Release>:RESOURCES_PATH="./resources/">
-    $<$<CONFIG:Release>:PRODUCTION_BUILD=1>
-    
-    $<$<CONFIG:MSVC>:_CRT_SECURE_NO_WARNINGS>
-)
+if(PRODUCTION_BUILD)
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PRIVATE RESOURCES_PATH="./resources/" PRODUCTION_BUILD=1)
+else()
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PRIVATE RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/" PRODUCTION_BUILD=0)
+endif()
 
 target_sources("${CMAKE_PROJECT_NAME}" PRIVATE 
     ${MY_SOURCES}
@@ -64,11 +64,7 @@ target_sources("${CMAKE_PROJECT_NAME}" PRIVATE
 )
 
 if(MSVC) # If using the VS compiler...
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC _CRT_SECURE_NO_WARNINGS)
-
-
-	#YOU CAN REMOVE THE CONSOLE WITH THIS LINE! YOU CAN EVEN DO AN IF PRODUCTION_BUILD TO REMOVE IT ONLY IN PRODUCTION BUILDS
-	#set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup") #no console
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
 	set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
     		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
@@ -90,18 +86,4 @@ target_link_libraries("${CMAKE_PROJECT_NAME}"
 	#imgui
 	#ImGui-SFML::ImGui-SFML
 )
-
-if(CMAKE_GENERATOR MATCHES "Ninja|Makefiles")
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_BINARY_DIR}/compile_commands.json
-            ${CMAKE_SOURCE_DIR}/compile_commands.json
-    )
-endif()
-
-
-
-
-
 

@@ -1,36 +1,67 @@
-<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/7e86634c-55d0-44e1-9fa4-410225211204" />
+# SFML Game
 
------
+## Requirements
 
-### Building Instructions (Terminal CMake)
+- CMake 3.28 or newer
+- A C++23 compiler (Xcode Command Line Tools on macOS)
+- Ninja for the included macOS presets (`brew install ninja` if needed)
 
-#### Requirements
+SFML 3.0.2 is included in `thirdparty/SFML-3.0.2` and is built with the project.
 
-  * C++ Compiler (GCC, Clang, MSVC) with support for **C++17/C++20**.
-  * **CMake 3.10+**.
+## Build on macOS
 
-#### Step 1: Clone and Configure
+Install and initialize Apple's command line toolchain:
 
-```bash
-git clone https://github.com/adamD53/sfml-game.git
-cd sfml-game
-mkdir build
-cd build
+```sh
+xcode-select --install
+sudo xcodebuild -license
 ```
 
-#### Step 2: Generate Build Files
+If Xcode is installed in a non-default location, select it with
+`sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer`.
 
-Generate the necessary build files.
+From the repository root, configure and build Debug:
 
-```bash
-cmake .. 
+```sh
+cmake --preset macos-debug
+cmake --build --preset macos-debug
 ```
-Add ```-G "Visual Studio 17 2022"``` to generate solution file.
 
-#### Step 3: Compile the Project
+The executable is `build/macos-debug/mygame`. Debug builds use the repository's
+absolute resource directory, so the executable can be launched from any working
+directory.
 
-Use the generic build command to compile the executable.
+For a Release build:
 
-```bash
-cmake --build . 
+```sh
+cmake --preset macos-release
+cmake --build --preset macos-release
 ```
+
+Release uses `./resources/`; launch it with the repository root as the working
+directory. This relative path is suitable for local builds; packaging resources
+inside a distributable macOS app bundle is not configured yet.
+
+## Other platforms
+
+The project can also be configured with another CMake generator, for example:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+```
+
+On Windows, CMake can generate Visual Studio projects with
+`-G "Visual Studio 17 2022"`.
+
+With Visual Studio 2022 and its C++ workload installed, configure and build
+using the Windows presets:
+
+```powershell
+cmake --preset windows-debug
+cmake --build --preset windows-debug
+```
+
+For Release, use `windows-release` in both commands. The Windows presets target
+64-bit builds; Debug uses the repository resource path, while Release expects
+`resources` in the executable's working directory.
