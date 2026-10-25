@@ -9,6 +9,7 @@
 #include "object_pool.hpp"
 #include "player.hpp"
 #include "player_gui.hpp"
+#include "spatial_grid.hpp"
 #include "state.hpp"
 #include "terrain.hpp"
 
@@ -54,6 +55,7 @@ private:
     MeleeCombatSystem m_MeleeCombatSystem;
     std::vector<SwooshEffect> m_SwooshEffects;
     std::vector<sf::Vector2f> m_EnemyPositions;
+    SpatialGrid m_EnemyGrid;
     std::vector<DepthActor> m_DepthActors;
     std::unordered_map<std::string, std::unique_ptr<sf::Texture>> m_Tilesets;
     std::unique_ptr<Camera> m_Camera;

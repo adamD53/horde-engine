@@ -2,6 +2,7 @@
 
 #include "animation.hpp"
 #include "entity.hpp"
+#include "spatial_grid.hpp"
 
 #include <random>
 #include <span>
@@ -56,7 +57,7 @@ public:
     void OnUpdate(float dt) override;
     auto GetBounds() const -> sf::FloatRect override;
     auto GetFeetBounds() const -> sf::FloatRect;
-    void SetSwarm(std::span<const sf::Vector2f> swarmPositions);
+    void SetSwarm(const SpatialGrid* swarm);
     void TakeDamage(float amount) override;
     auto IsDead() const -> bool override;
     auto GetHealth() const -> float;
@@ -64,6 +65,7 @@ public:
 
 private:
     [[nodiscard]] auto CalculateSeparation() const -> sf::Vector2f;
+    void UpdateHpBar();
     static auto GetTexture() -> const sf::Texture&;
 
 private:
@@ -76,7 +78,7 @@ private:
     float m_Health = s_MaxHealth;
     Entity* m_Target = nullptr;
     const Terrain* m_Terrain = nullptr;
-    std::span<const sf::Vector2f> m_SwarmPositions;
+    const SpatialGrid* m_Swarm = nullptr;
     sf::Vector2f m_Direction;
     float m_AttackTimer = s_AttackCooldown;
 

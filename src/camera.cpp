@@ -6,7 +6,9 @@
 
 namespace horde
 {
-Camera::Camera(sf::RenderWindow& window)
+Camera::Camera(sf::RenderWindow& window, const sf::Vector2f& worldSize)
+    : m_WorldSize(worldSize)
+    , m_WindowSize(window.getSize())
 {
     m_View = window.getDefaultView();
     m_View.zoom(config::cameraZoomLevel);
@@ -28,14 +30,14 @@ auto Camera::ClampPosition(const sf::Vector2f& position) const -> sf::Vector2f
 {
     const auto viewHalfSize = m_View.getSize() / 2.f;
 
-    const auto minX = static_cast<float>(config::leftBound) + viewHalfSize.x;
-    const auto maxX = static_cast<float>(config::rightBound) - viewHalfSize.x;
-    const auto minY = static_cast<float>(config::topBound) + viewHalfSize.y;
-    const auto maxY = static_cast<float>(config::bottomBound) - viewHalfSize.y;
+    const auto minX = viewHalfSize.x;
+    const auto maxX = m_WorldSize.x - viewHalfSize.x;
+    const auto minY = viewHalfSize.y;
+    const auto maxY = m_WorldSize.y - viewHalfSize.y;
 
-    const auto clampedX = (minX > maxX) ? static_cast<float>(config::leftBound + config::rightBound) * 0.5f
+    const auto clampedX = (minX > maxX) ? m_WorldSize.x * 0.5f
                                         : std::clamp(position.x, minX, maxX);
-    const auto clampedY = (minY > maxY) ? static_cast<float>(config::topBound + config::bottomBound) * 0.5f
+    const auto clampedY = (minY > maxY) ? m_WorldSize.y * 0.5f
                                         : std::clamp(position.y, minY, maxY);
 
     return {clampedX, clampedY};
@@ -60,6 +62,15 @@ void Camera::Update(const sf::Vector2f& targetPosition, float dt)
 
 void Camera::SetUIViewPoint()
 {
-    m_UIView = sf::View(sf::FloatRect({0.f, 0.f}, m_View.getSize()));
+    m_UIView = sf::View(sf::FloatRect({0.f, 0.f}, m_WindowSize));
+}
+
+void Camera::OnResize(const sf::Vector2u& newSize)
+{
+    m_WindowSize = sf::Vector2f{newSize};
+    m_View.setSize(m_WindowSize * config::cameraZoomLevel);
+    m_CenterPosition = ClampPosition(m_CenterPosition);
+    m_View.setCenter(m_CenterPosition);
+    SetUIViewPoint();
 }
 }

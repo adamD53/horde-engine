@@ -5,10 +5,6 @@
 
 namespace horde::config
 {
-inline constexpr uint32_t leftBound = 0;
-inline constexpr uint32_t topBound = 0;
-inline constexpr uint32_t rightBound = 3200;
-inline constexpr uint32_t bottomBound = 1920;
 inline constexpr uint32_t playerTextureHeight = 32;
 inline constexpr uint32_t playerTextureWidth = 32;
 inline constexpr sf::Vector2u singleTileSize{16, 16};
@@ -19,7 +15,7 @@ inline constexpr float projectileSpeed = 200.f;
 inline constexpr sf::Vector2f playerInitialPosition{536.f, 300.f};
 inline constexpr uint32_t initialEnemyCount = 100;
 inline constexpr uint32_t maxEnemyCount = 10000;
-inline constexpr float enemyAttackDamage = 0.0f;
+inline constexpr float enemyAttackDamage = 10.0f;
 inline constexpr float minSpawnDistance = 200.f;
 inline constexpr float maxSpawnDistance = 500.f;
 inline constexpr uint32_t maxProjectileCount = 200;

@@ -39,6 +39,11 @@ void Player::SetTerrain(const Terrain& terrain)
     m_Terrain = &terrain;
 }
 
+void Player::SetInputEnabled(bool enabled)
+{
+    m_InputEnabled = enabled;
+}
+
 auto Player::GetBounds() const -> sf::FloatRect
 {
     const auto pos = m_Sprite->getPosition();
@@ -47,7 +52,7 @@ auto Player::GetBounds() const -> sf::FloatRect
 
 auto Player::GetFeetBounds() const -> sf::FloatRect
 {
-    return {m_Sprite->getPosition() + sf::Vector2f(-5.f, -6.f), {10.f, 6.f}};
+    return {m_Sprite->getPosition() + sf::Vector2f(-5.f, 8.f), {10.f, 6.f}};
 }
 
 auto Player::GetPos() const -> sf::Vector2f
@@ -89,26 +94,28 @@ void Player::OnUpdate(float dt)
     auto direction = sf::Vector2f{0.0f, 0.0f};
     auto isMoving = false;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+    const auto isPressed = [this](sf::Keyboard::Key key) { return m_InputEnabled && sf::Keyboard::isKeyPressed(key); };
+
+    if (isPressed(sf::Keyboard::Key::A))
     {
         direction.x += -1.0f;
         m_CurrentState = PlayerState::WalkLeft;
         isMoving = true;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+    else if (isPressed(sf::Keyboard::Key::D))
     {
         direction.x += 1.0f;
         m_CurrentState = PlayerState::WalkRight;
         isMoving = true;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+    if (isPressed(sf::Keyboard::Key::W))
     {
         direction.y += -1.0f;
         m_CurrentState = PlayerState::WalkUp;
         isMoving = true;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+    else if (isPressed(sf::Keyboard::Key::S))
     {
         direction.y += 1.0f;
         m_CurrentState = PlayerState::WalkDown;

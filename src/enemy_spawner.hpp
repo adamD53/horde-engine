@@ -28,7 +28,7 @@ public:
     void Reset();
 
 private:
-    [[nodiscard]] auto GenerateSpawnPosition(const sf::Vector2f& center) -> sf::Vector2f;
+    [[nodiscard]] auto GenerateSpawnPosition(const sf::Vector2f& center, const Terrain& terrain) -> sf::Vector2f;
 
 private:
     uint32_t m_CurrentWaveCount;
@@ -49,7 +49,7 @@ void EnemySpawner::SpawnWave(Pool& pool, Entity& target, const Terrain& terrain)
             break;
         }
 
-        const auto spawnPos = GenerateSpawnPosition(targetPos);
+        const auto spawnPos = GenerateSpawnPosition(targetPos, terrain);
         std::visit([&](auto& enemy) {
             enemy.Spawn(target, spawnPos, terrain);
         }, *entityVariant);

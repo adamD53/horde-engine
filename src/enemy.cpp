@@ -57,12 +57,24 @@ void Enemy::Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terra
 
     m_Sprite.setPosition(spawnPosition);
 
-    m_HpBar.setSize(s_HpBarSize);
     m_HpBar.setFillColor(sf::Color::Green);
 
     m_CurrentState = EnemyState::FlyDown;
     m_Animator.Play(EnemyState::FlyDown);
     m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
+    UpdateHpBar();
+}
+
+void Enemy::UpdateHpBar()
+{
+    const auto bounds = GetBounds();
+    const auto hpPos =
+        sf::Vector2f{bounds.position.x + (bounds.size.x - s_HpBarSize.x) * 0.5f, bounds.position.y - s_HpBarOffsetY};
+    m_HpBackgroundBar.setPosition(hpPos);
+    m_HpBar.setPosition(hpPos);
+
+    const auto healthRatio = std::clamp(m_Health / s_MaxHealth, 0.f, 1.f);
+    m_HpBar.setSize({s_HpBarSize.x * healthRatio, s_HpBarSize.y});
 }
 
 auto Enemy::GetFeetBounds() const -> sf::FloatRect
@@ -73,14 +85,14 @@ auto Enemy::GetFeetBounds() const -> sf::FloatRect
         {bounds.size.x - (s_FeetInsetX * 2.f), s_FeetHeight}};
 }
 
-void Enemy::SetSwarm(std::span<const sf::Vector2f> swarmPositions)
+void Enemy::SetSwarm(const SpatialGrid* swarm)
 {
-    m_SwarmPositions = swarmPositions;
+    m_Swarm = swarm;
 }
 
 auto Enemy::CalculateSeparation() const -> sf::Vector2f
 {
-    if (m_SwarmPositions.empty())
+    if (!m_Swarm)
     {
         return {0.f, 0.f};
     }
@@ -88,16 +100,17 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
     auto separation = sf::Vector2f{0.f, 0.f};
     const auto currentPos = GetPos();
 
-    for (const auto& peerPos : m_SwarmPositions)
-    {
-        const auto diff = currentPos - peerPos;
-        const auto distance = diff.length();
+    m_Swarm->ForEachNear(currentPos, s_SeparationRadius,
+                         [&](const sf::Vector2f& peerPos)
+                         {
+                             const auto diff = currentPos - peerPos;
+                             const auto distance = diff.length();
 
-        if (distance > 0.001f && distance < s_SeparationRadius)
-        {
-            separation += (diff / distance) * (1.f - (distance / s_SeparationRadius));
-        }
-    }
+                             if (distance > 0.001f && distance < s_SeparationRadius)
+                             {
+                                 separation += (diff / distance) * (1.f - (distance / s_SeparationRadius));
+                             }
+                         });
 
     return separation;
 }
@@ -166,14 +179,7 @@ void Enemy::OnUpdate(float dt)
     m_Animator.Update(dt);
     m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
 
-    const auto bounds = GetBounds();
-    const auto hpPos =
-        sf::Vector2f{bounds.position.x + (bounds.size.x - s_HpBarSize.x) * 0.5f, bounds.position.y - s_HpBarOffsetY};
-    m_HpBackgroundBar.setPosition(hpPos);
-    m_HpBar.setPosition(hpPos);
-
-    const auto healthRatio = std::clamp(m_Health / s_MaxHealth, 0.f, 1.f);
-    m_HpBar.setSize({s_HpBarSize.x * healthRatio, s_HpBarSize.y});
+    UpdateHpBar();
 
     m_AttackTimer += dt;
     if (m_AttackTimer >= s_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))

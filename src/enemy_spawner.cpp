@@ -30,20 +30,30 @@ void EnemySpawner::Reset()
     m_WaveIndex = 0;
 }
 
-auto EnemySpawner::GenerateSpawnPosition(const sf::Vector2f& center) -> sf::Vector2f
+auto EnemySpawner::GenerateSpawnPosition(const sf::Vector2f& center, const Terrain& terrain) -> sf::Vector2f
 {
     auto angleDist = std::uniform_real_distribution<float>{0.f, 2.f * std::numbers::pi_v<float>};
     auto radiusDist = std::uniform_real_distribution<float>{config::minSpawnDistance, config::maxSpawnDistance};
 
-    constexpr auto enemySize = 32.f;
+    // Enemy sprites are centred on their position (origin 16,16)
+    constexpr auto halfSize = 16.f;
     constexpr auto margin = 20.f;
+    const auto worldSize = terrain.GetSize();
 
-    const auto minX = static_cast<float>(config::leftBound) + margin;
-    const auto maxX = static_cast<float>(config::rightBound) - enemySize - margin;
-    const auto minY = static_cast<float>(config::topBound) + margin;
-    const auto maxY = static_cast<float>(config::bottomBound) - enemySize - margin;
+    const auto minX = halfSize + margin;
+    const auto maxX = worldSize.x - halfSize - margin;
+    const auto minY = halfSize + margin;
+    const auto maxY = worldSize.y - halfSize - margin;
 
-    for (auto attempt = 0; attempt < 10; ++attempt)
+    const auto isFree = [&](const sf::Vector2f& pos)
+    {
+        const auto feet = sf::FloatRect{
+            {pos.x - halfSize + Enemy::s_FeetInsetX, pos.y + halfSize - Enemy::s_FeetHeight},
+            {(2.f * halfSize) - (Enemy::s_FeetInsetX * 2.f), Enemy::s_FeetHeight}};
+        return !terrain.IsBlocked(feet);
+    };
+
+    for (auto attempt = 0; attempt < 50; ++attempt)
     {
         const auto angle = angleDist(m_Rng);
         const auto radius = radiusDist(m_Rng);
@@ -52,7 +62,7 @@ auto EnemySpawner::GenerateSpawnPosition(const sf::Vector2f& center) -> sf::Vect
             center.y + radius * std::sin(angle)
         };
 
-        if (candidate.x >= minX && candidate.x <= maxX && candidate.y >= minY && candidate.y <= maxY)
+        if (candidate.x >= minX && candidate.x <= maxX && candidate.y >= minY && candidate.y <= maxY && isFree(candidate))
         {
             return candidate;
         }

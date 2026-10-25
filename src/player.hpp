@@ -35,6 +35,7 @@ public:
 
     void OnUpdate(float dt) override;
     void SetTerrain(const Terrain& terrain);
+    void SetInputEnabled(bool enabled);
     void TakeDamage(float amount) override;
     auto CheckForCollision(const Entity* target) const -> bool;
     [[nodiscard]] auto GetFeetBounds() const -> sf::FloatRect;
@@ -53,6 +54,7 @@ private:
     const float m_MaxHealthPoints = 100.0f;
     float m_HealthPoints = 100.0f;
     const Terrain* m_Terrain = nullptr;
+    bool m_InputEnabled = true;
 
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

@@ -18,10 +18,6 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     : m_StateMachine(stateMachine)
     , m_Window(window)
 {
-    m_Camera = std::make_unique<Camera>(m_Window);
-    m_Camera->SetCenterPoint(m_Player.GetPos());
-    m_Window.setView(m_Camera->GetViewPoint());
-
     m_Tilesets.emplace("hyptosis_tile-art-batch-1", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Tiles.png"));
     m_Tilesets.emplace("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png"));
     m_Tilesets.emplace("swoosh", std::make_unique<sf::Texture>(RESOURCES_PATH "weapons/swoosh.png"));
@@ -30,6 +26,12 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     m_SwooshSprite->setScale({2.5f, 2.5f});
     m_Terrain.Load(RESOURCES_PATH "world/map.tmx", m_Tilesets);
     m_Player.SetTerrain(m_Terrain);
+
+    m_EnemyGrid.Configure(m_Terrain.GetSize(), Enemy::s_SeparationRadius);
+
+    m_Camera = std::make_unique<Camera>(m_Window, m_Terrain.GetSize());
+    m_Camera->SetCenterPoint(m_Player.GetPos());
+    m_Window.setView(m_Camera->GetViewPoint());
 
     m_PlayerGUI = std::make_unique<PlayerGUI>(m_Window);
 
@@ -48,6 +50,8 @@ void GameState::OnExit()
 
 void GameState::OnUpdate(float dt)
 {
+    const auto hasFocus = m_Window.hasFocus();
+    m_Player.SetInputEnabled(hasFocus);
     m_Player.OnUpdate(dt);
     m_Camera->Update(m_Player.GetPos(), dt);
 
@@ -60,20 +64,21 @@ void GameState::OnUpdate(float dt)
         std::visit([&](const auto& enemy) { m_EnemyPositions.push_back(enemy.GetPos()); }, enemyVariant);
     }
 
+    m_EnemyGrid.Build(m_EnemyPositions);
+
     for (auto& enemyVariant : activeEnemies)
     {
         std::visit(
             [&](auto& enemy)
             {
-                enemy.SetSwarm(m_EnemyPositions);
+                enemy.SetSwarm(&m_EnemyGrid);
                 enemy.OnUpdate(dt);
-                m_Player.CheckForCollision(&enemy);
             },
             enemyVariant);
     }
 
     m_MeleeCombatSystem.Update(dt);
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_MeleeCombatSystem.CanAttack())
+    if (hasFocus && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_MeleeCombatSystem.CanAttack())
     {
         const auto mousePosition =
             m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window), m_Camera->GetViewPoint());
@@ -147,7 +152,7 @@ void GameState::OnRender(sf::RenderWindow& window)
         window.draw(*m_SwooshSprite);
     }
 
-    window.setView(window.getDefaultView());
+    window.setView(m_Camera->GetUIViewPoint());
     m_PlayerGUI->Render();
 }
 
@@ -155,6 +160,7 @@ void GameState::OnEvent(const sf::Event& event)
 {
     if (const auto* resized = event.getIf<sf::Event::Resized>())
     {
+        m_Camera->OnResize(resized->size);
         m_PlayerGUI->OnResize(resized->size);
     }
     else if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
