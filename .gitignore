@@ -11,3 +11,5 @@ Makefile
 compile_commands.json
 .DS_STORE
 AGENTS.md
+
+thirdparty/

@@ -16,25 +16,36 @@ option(PRODUCTION_BUILD "Use a relative resource path for a production build" OF
 
 if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebug>$<$<CONFIG:Release>:MultiThreaded>")
-endif()
-
-# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) #link time optimization
-
-# Ensure SFML is built as static libraries
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build SFML as static libraries" FORCE)
-
-#for imgui-sfml
-#set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui-core/imgui" CACHE PATH "..." FORCE)
-
-if(MSVC) 
 	add_compile_options(/arch:AVX2) #make sure SIMD optimizations take place
 endif()
 
-#Add SFML, and here you would add other libraries if needed!
-add_subdirectory(thirdparty/SFML-3.0.2)
-#add_subdirectory(thirdparty/imgui-core)
-#add_subdirectory(thirdparty/imgui-sfml-3.0)
+# Dependencies via FetchContent
+include(FetchContent)
 
+# 1. SFML 3.1.0
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build SFML as static libraries" FORCE)
+set(SFML_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(SFML_BUILD_TEST_SUITE OFF CACHE BOOL "" FORCE)
+set(SFML_BUILD_DOC OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG        3.1.0
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(SFML)
+
+# 2. tinyxml2 11.0.0
+set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    tinyxml2
+    GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
+    GIT_TAG        11.0.0
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(tinyxml2)
 
 # MY_SOURCES is defined to be a list of all the source files for my game 
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
@@ -45,7 +56,6 @@ file(GLOB_RECURSE MY_HEADERS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
 )
-
 
 add_executable("${CMAKE_PROJECT_NAME}")
 
@@ -60,7 +70,6 @@ endif()
 target_sources("${CMAKE_PROJECT_NAME}" PRIVATE 
     ${MY_SOURCES}
 	${MY_HEADERS}
-    thirdparty/tinyxml2/tinyxml2.cpp
 )
 
 if(MSVC) # If using the VS compiler...
@@ -68,22 +77,18 @@ if(MSVC) # If using the VS compiler...
 	set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
     		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
-
 endif()
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC 
 	"${CMAKE_CURRENT_SOURCE_DIR}/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/tinyxml2"
 )
 
-# Link SFML libraries statically, Here wou would add other libraries!
+# Link dependencies
 target_link_libraries("${CMAKE_PROJECT_NAME}" 
-	sfml-graphics 
-	sfml-window 
-	sfml-system 
-	sfml-audio 
-	sfml-network
-	#imgui
-	#ImGui-SFML::ImGui-SFML
+	SFML::Graphics 
+	SFML::Window 
+	SFML::System 
+	SFML::Audio 
+	SFML::Network
+	tinyxml2::tinyxml2
 )
-
