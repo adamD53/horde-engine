@@ -108,7 +108,11 @@ void GameState::OnUpdate(float dt)
         std::cout << "Wave count: " << m_EnemyPool.GetCount() << "\n";
     }
 
-    m_PlayerGUI->Update(m_Player.GetHealthPoints(), m_Player.GetMaxHealthPoints());
+    m_PlayerGUI->Update(
+        m_Player.GetHealthPoints(),
+        m_Player.GetMaxHealthPoints(),
+        m_EnemySpawner.GetWaveIndex(),
+        m_EnemyPool.GetCount());
 
     if (m_Player.IsDead())
     {
