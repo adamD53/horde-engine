@@ -1,0 +1,70 @@
+{
+    "mapFile": "world/map.tmx",
+    "name": "Forest Outskirts",
+    "playerSpawn": {
+        "x": 536.0,
+        "y": 300.0
+    },
+    "waves": [
+        {
+            "name": "Wave 1 - Scouting Party",
+            "preWaveDelay": 1.0,
+            "spawns": [
+                {
+                    "count": 15,
+                    "locationMode": "WorldPosition",
+                    "position": {
+                        "x": 350.0,
+                        "y": 220.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.15,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 15,
+                    "locationMode": "WorldPosition",
+                    "position": {
+                        "x": 720.0,
+                        "y": 380.0
+                    },
+                    "spawnDelay": 2.0,
+                    "spawnInterval": 0.15,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 85.0
+                    },
+                    "type": "Bat"
+                }
+            ]
+        },
+        {
+            "name": "Wave 2 - Ambush Ring",
+            "preWaveDelay": 2.0,
+            "spawns": [
+                {
+                    "count": 50,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 536.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.05,
+                    "stats": {
+                        "attackDamage": 15.0,
+                        "maxHealth": 120.0,
+                        "moveSpeed": 90.0
+                    },
+                    "type": "Bat"
+                }
+            ]
+        }
+    ]
+}
