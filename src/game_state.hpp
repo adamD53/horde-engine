@@ -62,5 +62,6 @@ private:
     std::unique_ptr<Camera> m_Camera;
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
     std::unique_ptr<sf::Sprite> m_SwooshSprite;
+    bool m_ShowStatsOverlay = true;
 };
 }

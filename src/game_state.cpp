@@ -167,6 +167,38 @@ void GameState::OnRender(sf::RenderWindow& window)
 
 void GameState::OnImGuiRender(const DebugUI& debugUI)
 {
+    if (m_ShowStatsOverlay)
+    {
+        const auto pad = 10.0f;
+        const auto* viewport = ImGui::GetMainViewport();
+        const auto workPos = viewport->WorkPos;
+        const auto workSize = viewport->WorkSize;
+        const auto windowPos = ImVec2(workPos.x + workSize.x - pad, workPos.y + pad);
+        const auto windowPosPivot = ImVec2(1.0f, 0.0f);
+
+        ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPosPivot);
+        ImGui::SetNextWindowBgAlpha(0.65f);
+
+        constexpr auto overlayFlags = ImGuiWindowFlags_NoDecoration |
+                                      ImGuiWindowFlags_AlwaysAutoResize |
+                                      ImGuiWindowFlags_NoSavedSettings |
+                                      ImGuiWindowFlags_NoFocusOnAppearing |
+                                      ImGuiWindowFlags_NoNav |
+                                      ImGuiWindowFlags_NoMove;
+
+        if (ImGui::Begin("Stats Mini-HUD", &m_ShowStatsOverlay, overlayFlags))
+        {
+            const auto& io = ImGui::GetIO();
+            const auto fps = io.Framerate;
+            const auto frameTimeMs = (fps > 0.0f) ? (1000.0f / fps) : 0.0f;
+            ImGui::Text("%.1f FPS (%.2f ms)", fps, frameTimeMs);
+            ImGui::Text("Wave %u", m_EnemySpawner.GetWaveIndex());
+            const auto playerPos = m_Player.GetPos();
+            ImGui::Text("Pos: (%.0f, %.0f)", playerPos.x, playerPos.y);
+        }
+        ImGui::End();
+    }
+
     if (!debugUI.IsVisible())
     {
         return;
@@ -214,6 +246,24 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             {
                 m_MeleeCombatSystem.SetDamage(damage);
             }
+        }
+
+        if (ImGui::CollapsingHeader("Performance & Statistics", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            const auto& io = ImGui::GetIO();
+            const auto fps = io.Framerate;
+            const auto frameTimeMs = (fps > 0.0f) ? (1000.0f / fps) : 0.0f;
+
+            ImGui::Text("FPS: %.1f (%.2f ms)", fps, frameTimeMs);
+
+            ImGui::SeparatorText("World & Coordinates");
+            ImGui::Text("Wave: %u", m_EnemySpawner.GetWaveIndex());
+            const auto playerPos = m_Player.GetPos();
+            ImGui::Text("Player Pos: (%.1f, %.1f)", playerPos.x, playerPos.y);
+            const auto camCenter = m_Camera->GetViewPoint().getCenter();
+            ImGui::Text("Camera Center: (%.1f, %.1f)", camCenter.x, camCenter.y);
+
+            ImGui::Checkbox("Detach as corner mini-HUD", &m_ShowStatsOverlay);
         }
     }
     ImGui::End();
