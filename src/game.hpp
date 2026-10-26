@@ -1,5 +1,6 @@
 #pragma once
 
+#include "debug_ui.hpp"
 #include "state_machine.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -19,11 +20,12 @@ class Game
 {
 public:
     Game(const GameSpecification& spec);
-    ~Game() = default;
+    ~Game();
     void Run();
 
 private:
     sf::RenderWindow m_Window;
     StateMachine m_StateMachine;
+    DebugUI m_DebugUI;
 };
 }

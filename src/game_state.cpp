@@ -5,6 +5,8 @@
 #include "menu_state.hpp"
 #include "state_machine.hpp"
 
+#include <imgui.h>
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -51,7 +53,8 @@ void GameState::OnExit()
 void GameState::OnUpdate(float dt)
 {
     const auto hasFocus = m_Window.hasFocus();
-    m_Player.SetInputEnabled(hasFocus);
+    const auto wantCapture = ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantCaptureMouse;
+    m_Player.SetInputEnabled(hasFocus && !wantCapture);
     m_Player.OnUpdate(dt);
     m_Camera->Update(m_Player.GetPos(), dt);
 
@@ -158,6 +161,11 @@ void GameState::OnRender(sf::RenderWindow& window)
 
     window.setView(m_Camera->GetUIViewPoint());
     m_PlayerGUI->Render();
+}
+
+void GameState::OnImGuiRender()
+{
+    // State-specific debug options can be added here
 }
 
 void GameState::OnEvent(const sf::Event& event)

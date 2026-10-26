@@ -47,6 +47,28 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyxml2)
 
+# 3. Dear ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG        v1.91.8
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(imgui)
+set(IMGUI_DIR "${imgui_SOURCE_DIR}" CACHE PATH "Dear ImGui directory" FORCE)
+
+# 4. ImGui-SFML
+set(IMGUI_SFML_FIND_SFML OFF CACHE BOOL "Disable find_package for SFML" FORCE)
+set(IMGUI_SFML_IMGUI_DEMO ON CACHE BOOL "Build ImGui demo" FORCE)
+
+FetchContent_Declare(
+    ImGui-SFML
+    GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+    GIT_TAG        v3.0
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(ImGui-SFML)
+
 # MY_SOURCES is defined to be a list of all the source files for my game 
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -91,4 +113,5 @@ target_link_libraries("${CMAKE_PROJECT_NAME}"
 	SFML::Audio 
 	SFML::Network
 	tinyxml2::tinyxml2
+	ImGui-SFML::ImGui-SFML
 )
