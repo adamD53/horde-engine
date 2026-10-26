@@ -2,6 +2,8 @@
 
 #include "animation.hpp"
 #include "entity.hpp"
+#include "global_config.hpp"
+#include "level_data.hpp"
 #include "spatial_grid.hpp"
 
 #include <random>
@@ -53,6 +55,7 @@ public:
     Enemy& operator=(const Enemy&) = default;
 
     void Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain);
+    void Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain, const EnemyStats& stats);
     auto GetPos() const -> sf::Vector2f override;
     void OnUpdate(float dt) override;
     auto GetBounds() const -> sf::FloatRect override;
@@ -75,7 +78,9 @@ private:
     sf::RectangleShape m_HpBackgroundBar;
     sf::RectangleShape m_HpBar;
     float m_Speed = 100.f;
+    float m_MaxHealth = s_MaxHealth;
     float m_Health = s_MaxHealth;
+    float m_AttackDamage = config::enemyAttackDamage;
     Entity* m_Target = nullptr;
     const Terrain* m_Terrain = nullptr;
     const SpatialGrid* m_Swarm = nullptr;

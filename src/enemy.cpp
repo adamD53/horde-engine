@@ -47,13 +47,24 @@ Enemy::Enemy()
 
 void Enemy::Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain)
 {
+    auto distSpeed = std::uniform_int_distribution<int>{s_MinSpeed, s_MaxSpeed};
+    const auto stats = EnemyStats{
+        .maxHealth = s_MaxHealth,
+        .moveSpeed = static_cast<float>(distSpeed(s_RandomDevice)),
+        .attackDamage = config::enemyAttackDamage,
+    };
+    Spawn(target, spawnPosition, terrain, stats);
+}
+
+void Enemy::Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terrain& terrain, const EnemyStats& stats)
+{
     m_Target = &target;
     m_Terrain = &terrain;
-    m_Health = s_MaxHealth;
+    m_MaxHealth = std::max(1.0f, stats.maxHealth);
+    m_Health = m_MaxHealth;
+    m_Speed = std::max(0.0f, stats.moveSpeed);
+    m_AttackDamage = std::max(0.0f, stats.attackDamage);
     m_AttackTimer = s_AttackCooldown;
-
-    auto dist_speed = std::uniform_int_distribution<int>{s_MinSpeed, s_MaxSpeed};
-    m_Speed = static_cast<float>(dist_speed(s_RandomDevice));
 
     m_Sprite.setPosition(spawnPosition);
 
@@ -73,7 +84,7 @@ void Enemy::UpdateHpBar()
     m_HpBackgroundBar.setPosition(hpPos);
     m_HpBar.setPosition(hpPos);
 
-    const auto healthRatio = std::clamp(m_Health / s_MaxHealth, 0.f, 1.f);
+    const auto healthRatio = std::clamp(m_Health / std::max(1.0f, m_MaxHealth), 0.f, 1.f);
     m_HpBar.setSize({s_HpBarSize.x * healthRatio, s_HpBarSize.y});
 }
 
@@ -142,7 +153,7 @@ auto Enemy::GetHealth() const -> float
 
 auto Enemy::GetMaxHealth() const -> float
 {
-    return s_MaxHealth;
+    return m_MaxHealth;
 }
 
 void Enemy::OnUpdate(float dt)
@@ -184,7 +195,7 @@ void Enemy::OnUpdate(float dt)
     m_AttackTimer += dt;
     if (m_AttackTimer >= s_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))
     {
-        m_Target->TakeDamage(config::enemyAttackDamage);
+        m_Target->TakeDamage(m_AttackDamage);
         m_AttackTimer = 0.0f;
     }
 }
