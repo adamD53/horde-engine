@@ -53,6 +53,39 @@ void Game::Run()
                 {
                     m_DebugUI.Toggle();
                 }
+                else if (keyPressed->code == sf::Keyboard::Key::Escape &&
+                         ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+                {
+                    ImGui::SetWindowFocus(nullptr);
+                    continue;
+                }
+            }
+
+            if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+            {
+                if (!ImGui::GetIO().WantCaptureMouse)
+                {
+                    ImGui::SetWindowFocus(nullptr);
+                }
+            }
+
+            const bool imguiFocused =
+                ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
+
+            if (imguiFocused)
+            {
+                const bool isInputEvent = event->is<sf::Event::MouseButtonPressed>() ||
+                                          event->is<sf::Event::MouseButtonReleased>() ||
+                                          event->is<sf::Event::MouseMoved>() ||
+                                          event->is<sf::Event::MouseWheelScrolled>() ||
+                                          event->is<sf::Event::KeyPressed>() ||
+                                          event->is<sf::Event::KeyReleased>() ||
+                                          event->is<sf::Event::TextEntered>();
+
+                if (isInputEvent)
+                {
+                    continue;
+                }
             }
 
             if (auto* state = m_StateMachine.GetActiveState())

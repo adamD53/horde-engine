@@ -11,7 +11,7 @@ void DebugUI::Render()
         return;
     }
 
-    if (ImGui::Begin("Debug UI", &m_Visible))
+    if (ImGui::Begin("Debug UI", &m_Visible, ImGuiWindowFlags_NoFocusOnAppearing))
     {
         // Blank debug window
     }

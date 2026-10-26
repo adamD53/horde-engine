@@ -53,8 +53,9 @@ void GameState::OnExit()
 void GameState::OnUpdate(float dt)
 {
     const auto hasFocus = m_Window.hasFocus();
-    const auto wantCapture = ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantCaptureMouse;
-    m_Player.SetInputEnabled(hasFocus && !wantCapture);
+    const bool imguiFocused =
+        ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
+    m_Player.SetInputEnabled(hasFocus && !imguiFocused);
     m_Player.OnUpdate(dt);
     m_Camera->Update(m_Player.GetPos(), dt);
 
@@ -81,7 +82,7 @@ void GameState::OnUpdate(float dt)
     }
 
     m_MeleeCombatSystem.Update(dt);
-    if (hasFocus && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_MeleeCombatSystem.CanAttack())
+    if (hasFocus && !imguiFocused && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_MeleeCombatSystem.CanAttack())
     {
         const auto mousePosition =
             m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window), m_Camera->GetViewPoint());

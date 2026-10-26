@@ -2,6 +2,8 @@
 #include "game_state.hpp"
 #include "state_machine.hpp"
 
+#include <imgui.h>
+
 #include <memory>
 
 namespace horde
@@ -30,6 +32,14 @@ void MenuState::OnExit()
 
 void MenuState::OnUpdate([[maybe_unused]] float dt)
 {
+    const bool imguiFocused =
+        ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
+    if (imguiFocused)
+    {
+        m_PlayButton.setFillColor(sf::Color{70, 130, 180});
+        return;
+    }
+
     const auto mousePos = m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window));
     if (m_PlayButton.getGlobalBounds().contains(mousePos))
     {
