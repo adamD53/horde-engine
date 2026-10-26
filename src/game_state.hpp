@@ -15,6 +15,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <array>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -63,5 +64,9 @@ private:
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
     std::unique_ptr<sf::Sprite> m_SwooshSprite;
     bool m_ShowStatsOverlay = true;
+
+    static constexpr size_t s_FrameTimeHistorySize = 100;
+    std::array<float, s_FrameTimeHistorySize> m_FrameTimeHistory{};
+    size_t m_FrameTimeOffset = 0;
 };
 }

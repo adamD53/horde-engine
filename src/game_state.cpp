@@ -53,6 +53,9 @@ void GameState::OnExit()
 
 void GameState::OnUpdate(float dt)
 {
+    m_FrameTimeHistory[m_FrameTimeOffset] = dt * 1000.0f;
+    m_FrameTimeOffset = (m_FrameTimeOffset + 1) % s_FrameTimeHistorySize;
+
     const auto hasFocus = m_Window.hasFocus();
     const bool imguiFocused =
         ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
@@ -255,6 +258,15 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             const auto frameTimeMs = (fps > 0.0f) ? (1000.0f / fps) : 0.0f;
 
             ImGui::Text("FPS: %.1f (%.2f ms)", fps, frameTimeMs);
+
+            ImGui::PlotLines("Frame Time",
+                             m_FrameTimeHistory.data(),
+                             static_cast<int>(m_FrameTimeHistory.size()),
+                             static_cast<int>(m_FrameTimeOffset),
+                             "ms",
+                             0.0f,
+                             33.3f,
+                             ImVec2(0.0f, 50.0f));
 
             ImGui::SeparatorText("World & Coordinates");
             ImGui::Text("Wave: %u", m_EnemySpawner.GetWaveIndex());
