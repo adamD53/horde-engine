@@ -69,6 +69,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ImGui-SFML)
 
+# 5. nlohmann/json 3.11.3
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.11.3
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
 # MY_SOURCES is defined to be a list of all the source files for my game 
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -114,4 +125,5 @@ target_link_libraries("${CMAKE_PROJECT_NAME}"
 	SFML::Network
 	tinyxml2::tinyxml2
 	ImGui-SFML::ImGui-SFML
+	nlohmann_json::nlohmann_json
 )
