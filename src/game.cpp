@@ -108,7 +108,7 @@ void Game::Run()
         if (auto* state = m_StateMachine.GetActiveState())
         {
             state->OnRender(m_Window);
-            state->OnImGuiRender();
+            state->OnImGuiRender(m_DebugUI);
         }
 
         m_DebugUI.Render();

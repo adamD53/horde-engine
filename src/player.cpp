@@ -70,13 +70,36 @@ auto Player::GetMaxHealthPoints() const -> float
     return m_MaxHealthPoints;
 }
 
+void Player::SetImmortal(bool immortal)
+{
+    m_IsImmortal = immortal;
+}
+
+auto Player::IsImmortal() const -> bool
+{
+    return m_IsImmortal;
+}
+
+void Player::SetHealthPoints(float hp)
+{
+    m_HealthPoints = std::clamp(hp, 0.0f, m_MaxHealthPoints);
+}
+
 void Player::TakeDamage(float amount)
 {
+    if (m_IsImmortal)
+    {
+        return;
+    }
     m_HealthPoints = std::max(0.0f, m_HealthPoints - amount);
 }
 
 auto Player::IsDead() const -> bool
 {
+    if (m_IsImmortal)
+    {
+        return false;
+    }
     return m_HealthPoints <= 0.0f;
 }
 

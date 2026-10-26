@@ -1,4 +1,5 @@
 #include "game_state.hpp"
+#include "debug_ui.hpp"
 #include "defeat_state.hpp"
 #include "enemy.hpp"
 #include "global_config.hpp"
@@ -164,9 +165,58 @@ void GameState::OnRender(sf::RenderWindow& window)
     m_PlayerGUI->Render();
 }
 
-void GameState::OnImGuiRender()
+void GameState::OnImGuiRender(const DebugUI& debugUI)
 {
-    // State-specific debug options can be added here
+    if (!debugUI.IsVisible())
+    {
+        return;
+    }
+
+    if (ImGui::Begin("Debug UI", nullptr, ImGuiWindowFlags_NoFocusOnAppearing))
+    {
+        if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            auto isImmortal = m_Player.IsImmortal();
+            if (ImGui::Checkbox("Immortal", &isImmortal))
+            {
+                m_Player.SetImmortal(isImmortal);
+            }
+
+            auto hp = m_Player.GetHealthPoints();
+            if (ImGui::SliderFloat("HP", &hp, 0.0f, m_Player.GetMaxHealthPoints(), "%.0f"))
+            {
+                m_Player.SetHealthPoints(hp);
+            }
+        }
+
+        if (ImGui::CollapsingHeader("Combat & Weapon", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            auto range = m_MeleeCombatSystem.GetRange();
+            if (ImGui::SliderFloat("Melee Range", &range, 10.0f, 1000.0f, "%.1f"))
+            {
+                m_MeleeCombatSystem.SetRange(range);
+            }
+
+            auto sweepAngle = m_MeleeCombatSystem.GetSweepAngle();
+            if (ImGui::SliderFloat("Sweep Angle (deg)", &sweepAngle, 10.0f, 360.0f, "%.1f"))
+            {
+                m_MeleeCombatSystem.SetSweepAngle(sweepAngle);
+            }
+
+            auto attackDelay = m_MeleeCombatSystem.GetAttackDelay();
+            if (ImGui::SliderFloat("Attack Delay (s)", &attackDelay, 0.01f, 2.0f, "%.2f"))
+            {
+                m_MeleeCombatSystem.SetAttackDelay(attackDelay);
+            }
+
+            auto damage = m_MeleeCombatSystem.GetDamage();
+            if (ImGui::SliderFloat("Melee Damage", &damage, 1.0f, 500.0f, "%.1f"))
+            {
+                m_MeleeCombatSystem.SetDamage(damage);
+            }
+        }
+    }
+    ImGui::End();
 }
 
 void GameState::OnEvent(const sf::Event& event)

@@ -42,7 +42,7 @@ public:
     void OnExit() override;
     void OnUpdate(float dt) override;
     void OnRender(sf::RenderWindow& window) override;
-    void OnImGuiRender() override;
+    void OnImGuiRender(const DebugUI& debugUI) override;
     void OnEvent(const sf::Event& event) override;
 
 private:

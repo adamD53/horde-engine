@@ -5,6 +5,8 @@
 
 namespace horde
 {
+class DebugUI;
+
 class State
 {
 public:
@@ -14,7 +16,7 @@ public:
     virtual void OnExit() {}
     virtual void OnUpdate(float dt) = 0;
     virtual void OnRender(sf::RenderWindow& window) = 0;
-    virtual void OnImGuiRender() {}
+    virtual void OnImGuiRender([[maybe_unused]] const DebugUI& debugUI) {}
     virtual void OnEvent(const sf::Event& event) = 0;
 };
 }

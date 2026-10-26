@@ -36,6 +36,9 @@ public:
     void OnUpdate(float dt) override;
     void SetTerrain(const Terrain& terrain);
     void SetInputEnabled(bool enabled);
+    void SetImmortal(bool immortal);
+    [[nodiscard]] auto IsImmortal() const -> bool;
+    void SetHealthPoints(float hp);
     void TakeDamage(float amount) override;
     auto CheckForCollision(const Entity* target) const -> bool;
     [[nodiscard]] auto GetFeetBounds() const -> sf::FloatRect;
@@ -55,6 +58,7 @@ private:
     float m_HealthPoints = 100.0f;
     const Terrain* m_Terrain = nullptr;
     bool m_InputEnabled = true;
+    bool m_IsImmortal = false;
 
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
