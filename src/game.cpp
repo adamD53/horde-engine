@@ -1,6 +1,9 @@
 #include "game.hpp"
 #include "menu_state.hpp"
 
+#include <SFML/Audio/Listener.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowEnums.hpp>
 #include <imgui-SFML.h>
 #include <imgui.h>
 
@@ -12,14 +15,10 @@
 namespace horde
 {
 Game::Game(const GameSpecification& spec)
+    : m_Title(spec.title)
+    , m_Settings(SettingsSerializer::LoadFromFile(GameSettings::GetDefaultPath()))
 {
-    m_Window.create(sf::VideoMode(sf::Vector2u(spec.width, spec.height)), spec.title);
-    m_Window.setFramerateLimit(60);
-
-    if (!ImGui::SFML::Init(m_Window))
-    {
-        std::cerr << "Failed to initialize ImGui-SFML backend.\n";
-    }
+    ApplySettings(m_Settings, true);
 
     m_StateMachine.ChangeState(std::make_unique<MenuState>(m_StateMachine, m_Window));
     m_StateMachine.ProcessStateChange();
@@ -27,7 +26,94 @@ Game::Game(const GameSpecification& spec)
 
 Game::~Game()
 {
-    ImGui::SFML::Shutdown(m_Window);
+    if (m_ImGuiInitialized)
+    {
+        ImGui::SFML::Shutdown(m_Window);
+        m_ImGuiInitialized = false;
+    }
+}
+
+void Game::ApplySettings(const GameSettings& newSettings, bool forceRecreate)
+{
+    const auto modeChanged = (newSettings.windowMode != m_Settings.windowMode);
+    const auto resChanged = (newSettings.resolution != m_Settings.resolution);
+    const auto needsRecreate =
+        forceRecreate || modeChanged || (resChanged && newSettings.windowMode != WindowMode::Windowed);
+
+    m_Settings = newSettings;
+
+    if (needsRecreate)
+    {
+        if (m_ImGuiInitialized)
+        {
+            ImGui::SFML::Shutdown(m_Window);
+            m_ImGuiInitialized = false;
+        }
+
+        const auto desktopMode = sf::VideoMode::getDesktopMode();
+        auto targetMode = sf::VideoMode{sf::Vector2u{m_Settings.resolution.width, m_Settings.resolution.height}};
+
+        if (m_Settings.windowMode == WindowMode::Fullscreen)
+        {
+            if (!targetMode.isValid())
+            {
+                targetMode = desktopMode;
+            }
+            m_Window.create(targetMode, m_Title, sf::State::Fullscreen);
+        }
+        else if (m_Settings.windowMode == WindowMode::Borderless)
+        {
+            m_Window.create(targetMode, m_Title, sf::Style::None, sf::State::Windowed);
+            const auto posX = static_cast<int>(desktopMode.size.x > targetMode.size.x
+                                                   ? (desktopMode.size.x - targetMode.size.x) / 2
+                                                   : 0);
+            const auto posY = static_cast<int>(desktopMode.size.y > targetMode.size.y
+                                                   ? (desktopMode.size.y - targetMode.size.y) / 2
+                                                   : 0);
+            m_Window.setPosition({posX, posY});
+        }
+        else
+        {
+            m_Window.create(targetMode, m_Title, sf::Style::Default, sf::State::Windowed);
+        }
+
+        if (!ImGui::SFML::Init(m_Window))
+        {
+            std::cerr << "Failed to initialize ImGui-SFML backend.\n";
+        }
+        else
+        {
+            m_ImGuiInitialized = true;
+        }
+    }
+    else if (resChanged && m_Settings.windowMode == WindowMode::Windowed)
+    {
+        const auto newSize = sf::Vector2u{m_Settings.resolution.width, m_Settings.resolution.height};
+        m_Window.setSize(newSize);
+        m_Window.setView(sf::View{sf::FloatRect{{0.f, 0.f}, sf::Vector2f{newSize}}});
+    }
+
+    m_Window.setVerticalSyncEnabled(m_Settings.vsync);
+    m_Window.setFramerateLimit(m_Settings.vsync ? 0u : m_Settings.frameRateLimit);
+    sf::Listener::setGlobalVolume(std::clamp(m_Settings.masterVolume, 0.0f, 100.0f));
+
+    if (auto* state = m_StateMachine.GetActiveState())
+    {
+        const auto currentSize = m_Window.getSize();
+        state->OnEvent(sf::Event{sf::Event::Resized{currentSize}});
+    }
+
+    (void)SettingsSerializer::SaveToFile(m_Settings, GameSettings::GetDefaultPath());
+}
+
+auto Game::GetSettings() -> GameSettings&
+{
+    return m_Settings;
+}
+
+auto Game::GetSettings() const -> const GameSettings&
+{
+    return m_Settings;
 }
 
 void Game::Run()

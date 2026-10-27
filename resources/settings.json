@@ -1,0 +1,13 @@
+{
+    "frameRateLimit": 60,
+    "masterVolume": 100.0,
+    "musicVolume": 100.0,
+    "resolution": {
+        "height": 1440,
+        "width": 2560
+    },
+    "sfxVolume": 100.0,
+    "showStatsOverlay": true,
+    "vsync": false,
+    "windowMode": "Windowed"
+}
