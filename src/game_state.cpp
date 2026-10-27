@@ -437,6 +437,12 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             const auto camCenter = m_Camera->GetViewPoint().getCenter();
             ImGui::Text("Camera Center: (%.1f, %.1f)", camCenter.x, camCenter.y);
 
+            auto zoomLevel = m_Camera->GetZoomLevel();
+            if (ImGui::SliderFloat("Camera Zoom", &zoomLevel, Camera::s_MinZoomLevel, m_Camera->GetMaxZoomLevel(), "%.2f"))
+            {
+                m_Camera->SetZoomLevel(zoomLevel);
+            }
+
             ImGui::Checkbox("Detach as corner mini-HUD", &m_ShowStatsOverlay);
         }
     }

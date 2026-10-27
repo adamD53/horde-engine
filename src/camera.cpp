@@ -11,7 +11,8 @@ Camera::Camera(sf::RenderWindow& window, const sf::Vector2f& worldSize)
     , m_WindowSize(window.getSize())
 {
     m_View = window.getDefaultView();
-    m_View.zoom(config::cameraZoomLevel);
+    m_ZoomLevel = std::clamp(m_ZoomLevel, s_MinZoomLevel, GetMaxZoomLevel());
+    m_View.setSize(m_WindowSize * m_ZoomLevel);
     m_CenterPosition = m_View.getCenter();
     SetUIViewPoint();
 }
@@ -49,6 +50,31 @@ void Camera::SetCenterPoint(const sf::Vector2f& centerPoint)
     m_View.setCenter(m_CenterPosition);
 }
 
+void Camera::SetZoomLevel(float zoomLevel)
+{
+    m_ZoomLevel = std::clamp(zoomLevel, s_MinZoomLevel, GetMaxZoomLevel());
+    m_View.setSize(m_WindowSize * m_ZoomLevel);
+    m_CenterPosition = ClampPosition(m_CenterPosition);
+    m_View.setCenter(m_CenterPosition);
+}
+
+auto Camera::GetZoomLevel() const -> float
+{
+    return m_ZoomLevel;
+}
+
+auto Camera::GetMaxZoomLevel() const -> float
+{
+    if (m_WindowSize.x <= 0.0f || m_WindowSize.y <= 0.0f)
+    {
+        return 1.0f;
+    }
+
+    const auto maxZoomX = m_WorldSize.x / m_WindowSize.x;
+    const auto maxZoomY = m_WorldSize.y / m_WindowSize.y;
+    return std::max(s_MinZoomLevel, std::min(maxZoomX, maxZoomY));
+}
+
 void Camera::Update(const sf::Vector2f& targetPosition, float dt)
 {
     const auto clampedTarget = ClampPosition(targetPosition);
@@ -68,7 +94,8 @@ void Camera::SetUIViewPoint()
 void Camera::OnResize(const sf::Vector2u& newSize)
 {
     m_WindowSize = sf::Vector2f{newSize};
-    m_View.setSize(m_WindowSize * config::cameraZoomLevel);
+    m_ZoomLevel = std::clamp(m_ZoomLevel, s_MinZoomLevel, GetMaxZoomLevel());
+    m_View.setSize(m_WindowSize * m_ZoomLevel);
     m_CenterPosition = ClampPosition(m_CenterPosition);
     m_View.setCenter(m_CenterPosition);
     SetUIViewPoint();

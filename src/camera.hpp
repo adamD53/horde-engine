@@ -1,5 +1,7 @@
 #pragma once
 
+#include "global_config.hpp"
+
 #include <SFML/Graphics.hpp>
 
 namespace horde
@@ -7,14 +9,19 @@ namespace horde
 class Camera
 {
 public:
+    static constexpr float s_MinZoomLevel = 0.05f;
+
     Camera(sf::RenderWindow& window, const sf::Vector2f& worldSize);
 
     auto GetViewPoint() const -> sf::View;
     auto GetUIViewPoint() const -> sf::View;
-    
+
     void SetUIViewPoint();
     void OnResize(const sf::Vector2u& newSize);
     void SetCenterPoint(const sf::Vector2f& centerPoint);
+    void SetZoomLevel(float zoomLevel);
+    [[nodiscard]] auto GetZoomLevel() const -> float;
+    [[nodiscard]] auto GetMaxZoomLevel() const -> float;
     void Update(const sf::Vector2f& targetPosition, float dt);
 
 private:
@@ -24,5 +31,6 @@ private:
     sf::Vector2f m_CenterPosition;
     sf::Vector2f m_WorldSize;
     sf::Vector2f m_WindowSize;
+    float m_ZoomLevel{config::cameraZoomLevel};
 };
 }
