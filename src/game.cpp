@@ -20,7 +20,11 @@ Game::Game(const GameSpecification& spec)
 {
     ApplySettings(m_Settings, true);
 
-    m_StateMachine.ChangeState(std::make_unique<MenuState>(m_StateMachine, m_Window));
+    m_StateMachine.ChangeState(std::make_unique<MenuState>(
+        m_StateMachine,
+        m_Window,
+        m_Settings,
+        [this](const GameSettings& updated) { ApplySettings(updated); }));
     m_StateMachine.ProcessStateChange();
 }
 

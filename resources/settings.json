@@ -9,5 +9,5 @@
     "sfxVolume": 100.0,
     "showStatsOverlay": true,
     "vsync": false,
-    "windowMode": "Windowed"
+    "windowMode": "Borderless"
 }
