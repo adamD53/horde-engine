@@ -4,6 +4,7 @@
 #include "enemy.hpp"
 #include "enemy_spawner.hpp"
 #include "entity.hpp"
+#include "game_settings.hpp"
 #include "global_config.hpp"
 #include "level_data.hpp"
 #include "level_editor.hpp"
@@ -19,6 +20,7 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -39,6 +41,13 @@ class StateMachine;
 class GameState : public State
 {
 public:
+    using ApplySettingsCallback = std::function<void(const GameSettings&)>;
+
+    GameState(
+        StateMachine& stateMachine,
+        sf::RenderWindow& window,
+        GameSettings& settings,
+        ApplySettingsCallback onApplySettings = {});
     GameState(StateMachine& stateMachine, sf::RenderWindow& window);
     ~GameState() override = default;
 
@@ -58,6 +67,9 @@ private:
 private:
     StateMachine& m_StateMachine;
     sf::RenderWindow& m_Window;
+    GameSettings m_FallbackSettings{};
+    GameSettings& m_Settings;
+    ApplySettingsCallback m_OnApplySettings{};
 
     ObjectPool<EntityVariant> m_EnemyPool;
     EnemySpawner m_EnemySpawner;
@@ -76,7 +88,6 @@ private:
     LevelEditor m_LevelEditor{};
     size_t m_CurrentWaveCursor{0};
     bool m_IsTestingSingleWave{false};
-    bool m_ShowStatsOverlay = true;
 
     static constexpr size_t s_FrameTimeHistorySize = 100;
     std::array<float, s_FrameTimeHistorySize> m_FrameTimeHistory{};

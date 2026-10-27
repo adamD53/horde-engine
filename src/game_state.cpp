@@ -18,9 +18,15 @@
 
 namespace horde
 {
-GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
+GameState::GameState(
+    StateMachine& stateMachine,
+    sf::RenderWindow& window,
+    GameSettings& settings,
+    ApplySettingsCallback onApplySettings)
     : m_StateMachine(stateMachine)
     , m_Window(window)
+    , m_Settings(settings)
+    , m_OnApplySettings(std::move(onApplySettings))
 {
     m_Tilesets.emplace("hyptosis_tile-art-batch-1", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Tiles.png"));
     m_Tilesets.emplace("Trees", std::make_unique<sf::Texture>(RESOURCES_PATH "world/Trees.png"));
@@ -55,6 +61,12 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
     m_LevelEditor.SetOnPlayLevel([this]() { StartLevelFromBeginning(); });
 
     StartLevelFromBeginning();
+}
+
+GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
+    : GameState(stateMachine, window, m_FallbackSettings, {})
+{
+    m_FallbackSettings = SettingsSerializer::LoadFromFile(GameSettings::GetDefaultPath());
 }
 
 void GameState::OnEnter()
@@ -268,7 +280,8 @@ void GameState::OnUpdate(float dt)
         }
         else
         {
-            m_StateMachine.ChangeState(std::make_unique<DefeatState>(m_StateMachine, m_Window));
+            m_StateMachine.ChangeState(
+                std::make_unique<DefeatState>(m_StateMachine, m_Window, m_Settings, m_OnApplySettings));
         }
     }
 }
@@ -324,7 +337,7 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
 
     m_LevelEditor.OnImGuiRender(m_LevelData);
 
-    if (m_ShowStatsOverlay)
+    if (m_Settings.showStatsOverlay)
     {
         const auto pad = 10.0f;
         const auto* viewport = ImGui::GetMainViewport();
@@ -343,7 +356,7 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
                                       ImGuiWindowFlags_NoNav |
                                       ImGuiWindowFlags_NoMove;
 
-        if (ImGui::Begin("Stats Mini-HUD", &m_ShowStatsOverlay, overlayFlags))
+        if (ImGui::Begin("Stats Mini-HUD", &m_Settings.showStatsOverlay, overlayFlags))
         {
             const auto& io = ImGui::GetIO();
             const auto fps = io.Framerate;
@@ -442,8 +455,6 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             {
                 m_Camera->SetZoomLevel(zoomLevel);
             }
-
-            ImGui::Checkbox("Detach as corner mini-HUD", &m_ShowStatsOverlay);
         }
     }
     ImGui::End();
@@ -462,7 +473,8 @@ void GameState::OnEvent(const sf::Event& event)
     {
         if (keyPressed->code == sf::Keyboard::Key::Escape)
         {
-            m_StateMachine.ChangeState(std::make_unique<MenuState>(m_StateMachine, m_Window));
+            m_StateMachine.ChangeState(
+                std::make_unique<MenuState>(m_StateMachine, m_Window, m_Settings, m_OnApplySettings));
         }
     }
 }

@@ -695,10 +695,6 @@ void MenuState::OnEvent(const sf::Event& event)
             {
                 StartGame();
             }
-            else if (keyPressed->code == sf::Keyboard::Key::Escape)
-            {
-                m_Window.close();
-            }
         }
         else if (keyPressed->code == sf::Keyboard::Key::Escape)
         {
@@ -789,7 +785,8 @@ void MenuState::OnEvent(const sf::Event& event)
 
 void MenuState::StartGame()
 {
-    m_StateMachine.ChangeState(std::make_unique<GameState>(m_StateMachine, m_Window));
+    m_StateMachine.ChangeState(
+        std::make_unique<GameState>(m_StateMachine, m_Window, m_Settings, m_OnApplySettings));
 }
 
 void MenuState::OpenSettings()
@@ -809,13 +806,13 @@ void MenuState::CloseSettings()
 
 void MenuState::ApplyPendingSettings()
 {
-    m_Settings = m_PendingSettings;
     if (m_OnApplySettings)
     {
-        m_OnApplySettings(m_Settings);
+        m_OnApplySettings(m_PendingSettings);
     }
     else
     {
+        m_Settings = m_PendingSettings;
         (void)SettingsSerializer::SaveToFile(m_Settings, GameSettings::GetDefaultPath());
     }
     RebuildLayout();
