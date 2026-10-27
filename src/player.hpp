@@ -35,6 +35,7 @@ public:
 
     void OnUpdate(float dt) override;
     void SetTerrain(const Terrain& terrain);
+    void SetPosition(const sf::Vector2f& position);
     void SetInputEnabled(bool enabled);
     void SetImmortal(bool immortal);
     [[nodiscard]] auto IsImmortal() const -> bool;

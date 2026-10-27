@@ -1,11 +1,13 @@
 #pragma once
 
-#include "melee_combat_system.hpp"
-#include "global_config.hpp"
 #include "camera.hpp"
 #include "enemy.hpp"
 #include "enemy_spawner.hpp"
 #include "entity.hpp"
+#include "global_config.hpp"
+#include "level_data.hpp"
+#include "level_editor.hpp"
+#include "melee_combat_system.hpp"
 #include "object_pool.hpp"
 #include "player.hpp"
 #include "player_gui.hpp"
@@ -16,6 +18,7 @@
 #include <SFML/Graphics.hpp>
 
 #include <array>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -47,6 +50,12 @@ public:
     void OnEvent(const sf::Event& event) override;
 
 private:
+    void StartLevelFromBeginning();
+    void StartWaveTesting(size_t waveIndex);
+    void HandleModeChanged(ExecutionMode newMode);
+    void UpdateEditModeCamera(float dt, bool inputEnabled);
+
+private:
     StateMachine& m_StateMachine;
     sf::RenderWindow& m_Window;
 
@@ -63,10 +72,14 @@ private:
     std::unique_ptr<Camera> m_Camera;
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
     std::unique_ptr<sf::Sprite> m_SwooshSprite;
+    LevelData m_LevelData{};
+    LevelEditor m_LevelEditor{};
+    size_t m_CurrentWaveCursor{0};
+    bool m_IsTestingSingleWave{false};
     bool m_ShowStatsOverlay = true;
 
     static constexpr size_t s_FrameTimeHistorySize = 100;
     std::array<float, s_FrameTimeHistorySize> m_FrameTimeHistory{};
     size_t m_FrameTimeOffset = 0;
 };
-}
+} // namespace horde

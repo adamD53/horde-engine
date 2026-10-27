@@ -39,6 +39,11 @@ void Player::SetTerrain(const Terrain& terrain)
     m_Terrain = &terrain;
 }
 
+void Player::SetPosition(const sf::Vector2f& position)
+{
+    m_Sprite->setPosition(position);
+}
+
 void Player::SetInputEnabled(bool enabled)
 {
     m_InputEnabled = enabled;

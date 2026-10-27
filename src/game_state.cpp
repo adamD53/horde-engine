@@ -3,6 +3,7 @@
 #include "defeat_state.hpp"
 #include "enemy.hpp"
 #include "global_config.hpp"
+#include "level_serializer.hpp"
 #include "menu_state.hpp"
 #include "state_machine.hpp"
 
@@ -40,7 +41,20 @@ GameState::GameState(StateMachine& stateMachine, sf::RenderWindow& window)
 
     m_EnemyPool.PreAllocate(config::maxEnemyCount);
 
-    m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
+    if (auto loadedLevel = LevelSerializer::LoadFromFile(m_LevelEditor.GetCurrentFilePath()))
+    {
+        m_LevelData = std::move(*loadedLevel);
+    }
+    else
+    {
+        m_LevelData.playerSpawn = config::playerInitialPosition;
+    }
+
+    m_LevelEditor.SetOnModeChanged([this](ExecutionMode newMode) { HandleModeChanged(newMode); });
+    m_LevelEditor.SetOnTestWave([this](size_t waveIndex) { StartWaveTesting(waveIndex); });
+    m_LevelEditor.SetOnPlayLevel([this]() { StartLevelFromBeginning(); });
+
+    StartLevelFromBeginning();
 }
 
 void GameState::OnEnter()
@@ -51,6 +65,100 @@ void GameState::OnExit()
 {
 }
 
+void GameState::StartLevelFromBeginning()
+{
+    m_IsTestingSingleWave = false;
+    m_EnemyPool.Clear();
+    m_SwooshEffects.clear();
+    m_EnemySpawner.Reset();
+    m_CurrentWaveCursor = 0;
+
+    m_Player.SetPosition(m_LevelData.playerSpawn);
+    m_Player.SetHealthPoints(m_Player.GetMaxHealthPoints());
+    m_Camera->SetCenterPoint(m_Player.GetPos());
+
+    m_LevelEditor.SetMode(ExecutionMode::Play);
+
+    if (!m_LevelData.waves.empty())
+    {
+        m_EnemySpawner.StartWave(m_LevelData.waves[0], 1);
+        m_CurrentWaveCursor = 1;
+    }
+    else
+    {
+        m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
+    }
+}
+
+void GameState::StartWaveTesting(size_t waveIndex)
+{
+    if (waveIndex >= m_LevelData.waves.size())
+    {
+        return;
+    }
+
+    m_IsTestingSingleWave = true;
+    m_EnemyPool.Clear();
+    m_SwooshEffects.clear();
+    m_EnemySpawner.Reset();
+
+    m_Player.SetPosition(m_LevelData.playerSpawn);
+    m_Player.SetHealthPoints(m_Player.GetMaxHealthPoints());
+    m_Camera->SetCenterPoint(m_Player.GetPos());
+
+    m_EnemySpawner.StartWave(m_LevelData.waves[waveIndex], static_cast<uint32_t>(waveIndex + 1));
+    m_LevelEditor.SetMode(ExecutionMode::Play);
+}
+
+void GameState::HandleModeChanged(ExecutionMode newMode)
+{
+    if (newMode == ExecutionMode::Edit)
+    {
+        m_IsTestingSingleWave = false;
+        m_EnemyPool.Clear();
+        m_SwooshEffects.clear();
+        m_EnemySpawner.Reset();
+        m_Player.SetInputEnabled(false);
+    }
+    else if (!m_IsTestingSingleWave && m_EnemyPool.GetCount() == 0 && m_EnemySpawner.IsSpawningComplete())
+    {
+        StartLevelFromBeginning();
+    }
+}
+
+void GameState::UpdateEditModeCamera(float dt, bool inputEnabled)
+{
+    if (!inputEnabled)
+    {
+        return;
+    }
+
+    auto panDir = sf::Vector2f{0.0f, 0.0f};
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+    {
+        panDir.x -= 1.0f;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+    {
+        panDir.x += 1.0f;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+    {
+        panDir.y -= 1.0f;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+    {
+        panDir.y += 1.0f;
+    }
+
+    if (panDir.length() > 0.001f)
+    {
+        constexpr auto editCameraSpeed = 350.0f;
+        const auto currentCenter = m_Camera->GetViewPoint().getCenter();
+        m_Camera->SetCenterPoint(currentCenter + panDir.normalized() * (editCameraSpeed * dt));
+    }
+}
+
 void GameState::OnUpdate(float dt)
 {
     m_FrameTimeHistory[m_FrameTimeOffset] = dt * 1000.0f;
@@ -59,9 +167,24 @@ void GameState::OnUpdate(float dt)
     const auto hasFocus = m_Window.hasFocus();
     const bool imguiFocused =
         ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
+
+    if (m_LevelEditor.GetMode() == ExecutionMode::Edit)
+    {
+        m_Player.SetInputEnabled(false);
+        UpdateEditModeCamera(dt, hasFocus && !imguiFocused);
+        m_PlayerGUI->Update(
+            m_Player.GetHealthPoints(),
+            m_Player.GetMaxHealthPoints(),
+            m_EnemySpawner.GetWaveIndex(),
+            m_EnemyPool.GetCount());
+        return;
+    }
+
     m_Player.SetInputEnabled(hasFocus && !imguiFocused);
     m_Player.OnUpdate(dt);
     m_Camera->Update(m_Player.GetPos(), dt);
+
+    m_EnemySpawner.Update(dt, m_EnemyPool, m_Player, m_Terrain);
 
     const auto activeEnemies = m_EnemyPool.GetActive();
 
@@ -110,10 +233,24 @@ void GameState::OnUpdate(float dt)
     m_EnemyPool.RemoveIf([](const auto& enemyVariant)
                          { return std::visit([](const auto& enemy) { return enemy.IsDead(); }, enemyVariant); });
 
-    if (m_EnemyPool.GetCount() == 0)
+    if (m_EnemySpawner.IsWaveFinished(m_EnemyPool.GetCount()))
     {
-        m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
-        std::cout << "Wave count: " << m_EnemyPool.GetCount() << "\n";
+        if (m_IsTestingSingleWave)
+        {
+            m_LevelEditor.SetMode(ExecutionMode::Edit);
+        }
+        else if (m_CurrentWaveCursor < m_LevelData.waves.size())
+        {
+            m_EnemySpawner.StartWave(
+                m_LevelData.waves[m_CurrentWaveCursor],
+                static_cast<uint32_t>(m_CurrentWaveCursor + 1));
+            ++m_CurrentWaveCursor;
+        }
+        else
+        {
+            m_EnemySpawner.SpawnWave(m_EnemyPool, m_Player, m_Terrain);
+            std::cout << "Wave count: " << m_EnemyPool.GetCount() << "\n";
+        }
     }
 
     m_PlayerGUI->Update(
@@ -124,7 +261,15 @@ void GameState::OnUpdate(float dt)
 
     if (m_Player.IsDead())
     {
-        m_StateMachine.ChangeState(std::make_unique<DefeatState>(m_StateMachine, m_Window));
+        if (m_IsTestingSingleWave || m_LevelEditor.IsVisible())
+        {
+            m_Player.SetHealthPoints(m_Player.GetMaxHealthPoints());
+            m_LevelEditor.SetMode(ExecutionMode::Edit);
+        }
+        else
+        {
+            m_StateMachine.ChangeState(std::make_unique<DefeatState>(m_StateMachine, m_Window));
+        }
     }
 }
 
@@ -164,12 +309,21 @@ void GameState::OnRender(sf::RenderWindow& window)
         window.draw(*m_SwooshSprite);
     }
 
+    m_LevelEditor.OnWorldRender(window, m_LevelData);
+
     window.setView(m_Camera->GetUIViewPoint());
     m_PlayerGUI->Render();
 }
 
 void GameState::OnImGuiRender(const DebugUI& debugUI)
 {
+    if (!ImGui::GetIO().WantTextInput && ImGui::IsKeyPressed(ImGuiKey_F2, false))
+    {
+        m_LevelEditor.ToggleVisibility();
+    }
+
+    m_LevelEditor.OnImGuiRender(m_LevelData);
+
     if (m_ShowStatsOverlay)
     {
         const auto pad = 10.0f;
@@ -195,7 +349,10 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             const auto fps = io.Framerate;
             const auto frameTimeMs = (fps > 0.0f) ? (1000.0f / fps) : 0.0f;
             ImGui::Text("%.1f FPS (%.2f ms)", fps, frameTimeMs);
-            ImGui::Text("Wave %u", m_EnemySpawner.GetWaveIndex());
+            ImGui::Text(
+                "Mode: %s | Wave %u",
+                (m_LevelEditor.GetMode() == ExecutionMode::Edit) ? "EDIT" : "PLAY",
+                m_EnemySpawner.GetWaveIndex());
             const auto playerPos = m_Player.GetPos();
             ImGui::Text("Pos: (%.0f, %.0f)", playerPos.x, playerPos.y);
         }
@@ -209,6 +366,11 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
 
     if (ImGui::Begin("Debug UI", nullptr, ImGuiWindowFlags_NoFocusOnAppearing))
     {
+        if (ImGui::Button("Toggle Level & Wave Editor (F2)"))
+        {
+            m_LevelEditor.ToggleVisibility();
+        }
+
         if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
         {
             auto isImmortal = m_Player.IsImmortal();
@@ -283,6 +445,8 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
 
 void GameState::OnEvent(const sf::Event& event)
 {
+    m_LevelEditor.OnEvent(event, m_Window, m_Camera->GetViewPoint(), m_LevelData);
+
     if (const auto* resized = event.getIf<sf::Event::Resized>())
     {
         m_Camera->OnResize(resized->size);
@@ -296,4 +460,4 @@ void GameState::OnEvent(const sf::Event& event)
         }
     }
 }
-}
+} // namespace horde

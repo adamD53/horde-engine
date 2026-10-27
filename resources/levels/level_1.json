@@ -1,70 +1,146 @@
 {
-    "mapFile": "world/map.tmx",
-    "name": "Forest Outskirts",
-    "playerSpawn": {
-        "x": 536.0,
-        "y": 300.0
-    },
-    "waves": [
+  "mapFile": "world/map.tmx",
+  "name": "Forest Outskirts",
+  "playerSpawn": {
+    "x": 631.0,
+    "y": 481.0
+  },
+  "waves": [
+    {
+      "name": "Wave 1",
+      "preWaveDelay": 1.0,
+      "spawns": [
         {
-            "name": "Wave 1 - Scouting Party",
-            "preWaveDelay": 1.0,
-            "spawns": [
-                {
-                    "count": 15,
-                    "locationMode": "WorldPosition",
-                    "position": {
-                        "x": 350.0,
-                        "y": 220.0
-                    },
-                    "spawnDelay": 0.0,
-                    "spawnInterval": 0.15,
-                    "stats": {
-                        "attackDamage": 10.0,
-                        "maxHealth": 100.0,
-                        "moveSpeed": 75.0
-                    },
-                    "type": "Bat"
-                },
-                {
-                    "count": 15,
-                    "locationMode": "WorldPosition",
-                    "position": {
-                        "x": 720.0,
-                        "y": 380.0
-                    },
-                    "spawnDelay": 2.0,
-                    "spawnInterval": 0.15,
-                    "stats": {
-                        "attackDamage": 10.0,
-                        "maxHealth": 100.0,
-                        "moveSpeed": 85.0
-                    },
-                    "type": "Bat"
-                }
-            ]
+          "count": 15,
+          "locationMode": "WorldPosition",
+          "position": {
+            "x": 350.0,
+            "y": 220.0
+          },
+          "spawnDelay": 0.0,
+          "spawnInterval": 0.15000000596046448,
+          "stats": {
+            "attackDamage": 10.0,
+            "maxHealth": 100.0,
+            "moveSpeed": 75.0
+          },
+          "type": "Bat"
         },
         {
-            "name": "Wave 2 - Ambush Ring",
-            "preWaveDelay": 2.0,
-            "spawns": [
-                {
-                    "count": 50,
-                    "locationMode": "AroundPlayer",
-                    "position": {
-                        "x": 536.0,
-                        "y": 300.0
-                    },
-                    "spawnDelay": 0.0,
-                    "spawnInterval": 0.05,
-                    "stats": {
-                        "attackDamage": 15.0,
-                        "maxHealth": 120.0,
-                        "moveSpeed": 90.0
-                    },
-                    "type": "Bat"
-                }
-            ]
+          "count": 15,
+          "locationMode": "WorldPosition",
+          "position": {
+            "x": 720.0,
+            "y": 380.0
+          },
+          "spawnDelay": 2.0,
+          "spawnInterval": 0.15000000596046448,
+          "stats": {
+            "attackDamage": 10.0,
+            "maxHealth": 100.0,
+            "moveSpeed": 85.0
+          },
+          "type": "Bat"
         }
-    ]
+      ]
+    },
+    {
+      "name": "Wave 2",
+      "preWaveDelay": 2.0,
+      "spawns": [
+        {
+          "count": 50,
+          "locationMode": "AroundPlayer",
+          "position": {
+            "x": 536.0,
+            "y": 300.0
+          },
+          "spawnDelay": 0.0,
+          "spawnInterval": 0.05000000074505806,
+          "stats": {
+            "attackDamage": 15.0,
+            "maxHealth": 120.0,
+            "moveSpeed": 90.0
+          },
+          "type": "Bat"
+        }
+      ]
+    },
+    {
+      "name": "Wave 3",
+      "preWaveDelay": 1.0,
+      "spawns": [
+        {
+          "count": 321,
+          "locationMode": "WorldPosition",
+          "position": {
+            "x": 1278.247802734375,
+            "y": 284.6936950683594
+          },
+          "spawnDelay": 0.699999988079071,
+          "spawnInterval": 0.20000000298023224,
+          "stats": {
+            "attackDamage": 7.0,
+            "maxHealth": 100.0,
+            "moveSpeed": 39.0
+          },
+          "type": "Bat"
+        },
+        {
+          "count": 1,
+          "locationMode": "WorldPosition",
+          "position": {
+            "x": 1098.374755859375,
+            "y": 291.8977966308594
+          },
+          "spawnDelay": 0.0,
+          "spawnInterval": 0.20000000298023224,
+          "stats": {
+            "attackDamage": 10.0,
+            "maxHealth": 100.0,
+            "moveSpeed": 75.0
+          },
+          "type": "Bat"
+        }
+      ]
+    },
+    {
+      "name": "Wave 4",
+      "preWaveDelay": 1.0,
+      "spawns": [
+        {
+          "count": 1996,
+          "locationMode": "WorldPosition",
+          "position": {
+            "x": 657.8944091796875,
+            "y": 216.4378204345703
+          },
+          "spawnDelay": 0.0,
+          "spawnInterval": 0.0,
+          "stats": {
+            "attackDamage": 10.0,
+            "maxHealth": 100.0,
+            "moveSpeed": 75.0
+          },
+          "type": "Bat"
+        },
+        {
+          "count": 1,
+          "locationMode": "WorldPosition",
+          "position": {
+            "x": 788.288330078125,
+            "y": 190.00381469726563
+          },
+          "spawnDelay": 0.0,
+          "spawnInterval": 0.20000000298023224,
+          "stats": {
+            "attackDamage": 10.0,
+            "maxHealth": 100.0,
+            "moveSpeed": 75.0
+          },
+          "type": "Bat"
+        }
+      ]
+    }
+  ]
 }
