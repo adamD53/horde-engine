@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cstdint>
 
@@ -24,4 +25,7 @@ inline constexpr float meleeAttackRange = 200.f;
 inline constexpr float meleeSweepAngle = 150.f;
 inline constexpr float meleeAttackDelay = 0.1f;
 inline constexpr float meleeDamage = 50.f;
+inline constexpr float playerLightRadius = 180.f;
+inline constexpr sf::Color ambientDarknessColor{28, 30, 38, 255};
+inline constexpr sf::Color playerLightColor{255, 190, 115, 255};
 }
