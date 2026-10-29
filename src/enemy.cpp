@@ -111,17 +111,19 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
     auto separation = sf::Vector2f{0.f, 0.f};
     const auto currentPos = GetPos();
 
-    m_Swarm->ForEachNear(currentPos, s_SeparationRadius,
-                         [&](const sf::Vector2f& peerPos)
-                         {
-                             const auto diff = currentPos - peerPos;
-                             const auto distance = diff.length();
+    m_Swarm->ForEachNear(
+        currentPos,
+        s_SeparationRadius,
+        [&](const sf::Vector2f& peerPos)
+        {
+            const auto diff = currentPos - peerPos;
+            const auto distance = diff.length();
 
-                             if (distance > 0.001f && distance < s_SeparationRadius)
-                             {
-                                 separation += (diff / distance) * (1.f - (distance / s_SeparationRadius));
-                             }
-                         });
+            if (distance > 0.001f && distance < s_SeparationRadius)
+            {
+                separation += (diff / distance) * (1.f - (distance / s_SeparationRadius));
+            }
+        });
 
     return separation;
 }
@@ -203,7 +205,7 @@ void Enemy::OnUpdate(float dt)
 void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite, states);
-    target.draw(m_HpBackgroundBar, states);
-    target.draw(m_HpBar, states);
+    // target.draw(m_HpBackgroundBar, states);
+    // target.draw(m_HpBar, states);
 }
 }

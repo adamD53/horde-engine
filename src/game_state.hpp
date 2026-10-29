@@ -8,6 +8,7 @@
 #include "global_config.hpp"
 #include "level_data.hpp"
 #include "level_editor.hpp"
+#include "lighting_system.hpp"
 #include "melee_combat_system.hpp"
 #include "object_pool.hpp"
 #include "player.hpp"
@@ -84,6 +85,7 @@ private:
     std::unique_ptr<Camera> m_Camera;
     std::unique_ptr<PlayerGUI> m_PlayerGUI;
     std::unique_ptr<sf::Sprite> m_SwooshSprite;
+    LightingSystem m_LightingSystem;
     LevelData m_LevelData{};
     LevelEditor m_LevelEditor{};
     size_t m_CurrentWaveCursor{0};

@@ -3,8 +3,8 @@
     "masterVolume": 100.0,
     "musicVolume": 100.0,
     "resolution": {
-        "height": 1440,
-        "width": 2560
+        "height": 1200,
+        "width": 1920
     },
     "sfxVolume": 97.0,
     "showStatsOverlay": true,

@@ -124,6 +124,8 @@ void GameState::StartWaveTesting(size_t waveIndex)
 
 void GameState::HandleModeChanged(ExecutionMode newMode)
 {
+    m_LightingSystem.SetEnabled(newMode == ExecutionMode::Play);
+
     if (newMode == ExecutionMode::Edit)
     {
         m_IsTestingSingleWave = false;
@@ -177,8 +179,7 @@ void GameState::OnUpdate(float dt)
     m_FrameTimeOffset = (m_FrameTimeOffset + 1) % s_FrameTimeHistorySize;
 
     const auto hasFocus = m_Window.hasFocus();
-    const bool imguiFocused =
-        ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
+    const bool imguiFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) || ImGui::IsAnyItemActive();
 
     if (m_LevelEditor.GetMode() == ExecutionMode::Edit)
     {
@@ -221,7 +222,8 @@ void GameState::OnUpdate(float dt)
     }
 
     m_MeleeCombatSystem.Update(dt);
-    if (hasFocus && !imguiFocused && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && m_MeleeCombatSystem.CanAttack())
+    if (hasFocus && !imguiFocused && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
+        m_MeleeCombatSystem.CanAttack())
     {
         const auto mousePosition =
             m_Window.mapPixelToCoords(sf::Mouse::getPosition(m_Window), m_Camera->GetViewPoint());
@@ -231,9 +233,10 @@ void GameState::OnUpdate(float dt)
 
         m_MeleeCombatSystem.Attack(playerPos, mousePosition, m_EnemyPool);
 
-        m_SwooshEffects.push_back(SwooshEffect{
-            .rotation = sf::radians(aimAngle),
-        });
+        m_SwooshEffects.push_back(
+            SwooshEffect{
+                .rotation = sf::radians(aimAngle),
+            });
     }
 
     for (auto& effect : m_SwooshEffects)
@@ -254,8 +257,7 @@ void GameState::OnUpdate(float dt)
         else if (m_CurrentWaveCursor < m_LevelData.waves.size())
         {
             m_EnemySpawner.StartWave(
-                m_LevelData.waves[m_CurrentWaveCursor],
-                static_cast<uint32_t>(m_CurrentWaveCursor + 1));
+                m_LevelData.waves[m_CurrentWaveCursor], static_cast<uint32_t>(m_CurrentWaveCursor + 1));
             ++m_CurrentWaveCursor;
         }
         else
@@ -322,6 +324,8 @@ void GameState::OnRender(sf::RenderWindow& window)
         window.draw(*m_SwooshSprite);
     }
 
+    m_LightingSystem.Render(window, m_Camera->GetViewPoint(), m_Player.GetPos());
+
     m_LevelEditor.OnWorldRender(window, m_LevelData);
 
     window.setView(m_Camera->GetUIViewPoint());
@@ -349,12 +353,9 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
         ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPosPivot);
         ImGui::SetNextWindowBgAlpha(0.65f);
 
-        constexpr auto overlayFlags = ImGuiWindowFlags_NoDecoration |
-                                      ImGuiWindowFlags_AlwaysAutoResize |
-                                      ImGuiWindowFlags_NoSavedSettings |
-                                      ImGuiWindowFlags_NoFocusOnAppearing |
-                                      ImGuiWindowFlags_NoNav |
-                                      ImGuiWindowFlags_NoMove;
+        constexpr auto overlayFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
+                                      ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
 
         if (ImGui::Begin("Stats Mini-HUD", &m_Settings.showStatsOverlay, overlayFlags))
         {
@@ -434,14 +435,15 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
 
             ImGui::Text("FPS: %.1f (%.2f ms)", fps, frameTimeMs);
 
-            ImGui::PlotLines("Frame Time",
-                             m_FrameTimeHistory.data(),
-                             static_cast<int>(m_FrameTimeHistory.size()),
-                             static_cast<int>(m_FrameTimeOffset),
-                             "ms",
-                             0.0f,
-                             33.3f,
-                             ImVec2(0.0f, 50.0f));
+            ImGui::PlotLines(
+                "Frame Time",
+                m_FrameTimeHistory.data(),
+                static_cast<int>(m_FrameTimeHistory.size()),
+                static_cast<int>(m_FrameTimeOffset),
+                "ms",
+                0.0f,
+                33.3f,
+                ImVec2(0.0f, 50.0f));
 
             ImGui::SeparatorText("World & Coordinates");
             ImGui::Text("Wave: %u", m_EnemySpawner.GetWaveIndex());
@@ -451,7 +453,8 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             ImGui::Text("Camera Center: (%.1f, %.1f)", camCenter.x, camCenter.y);
 
             auto zoomLevel = m_Camera->GetZoomLevel();
-            if (ImGui::SliderFloat("Camera Zoom", &zoomLevel, Camera::s_MinZoomLevel, m_Camera->GetMaxZoomLevel(), "%.2f"))
+            if (ImGui::SliderFloat(
+                    "Camera Zoom", &zoomLevel, Camera::s_MinZoomLevel, m_Camera->GetMaxZoomLevel(), "%.2f"))
             {
                 m_Camera->SetZoomLevel(zoomLevel);
             }

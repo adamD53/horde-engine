@@ -4,6 +4,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <cstddef>
 #include <cstdint>
 
 namespace horde
@@ -11,9 +12,10 @@ namespace horde
 class LightingSystem
 {
 public:
-    static constexpr uint32_t s_GradientResolution = 256;
+    static constexpr size_t s_RayCount = 64;
+    static constexpr size_t s_RingCount = 12;
 
-    explicit LightingSystem(const sf::Vector2u& windowSize);
+    LightingSystem();
     ~LightingSystem() = default;
 
     LightingSystem(const LightingSystem&) = delete;
@@ -21,7 +23,6 @@ public:
     LightingSystem(LightingSystem&&) noexcept = default;
     auto operator=(LightingSystem&&) noexcept -> LightingSystem& = default;
 
-    void OnResize(const sf::Vector2u& windowSize);
     void Render(sf::RenderTarget& target, const sf::View& worldView, const sf::Vector2f& playerPos);
 
     void SetEnabled(bool enabled);
@@ -40,15 +41,14 @@ public:
     [[nodiscard]] auto GetLightIntensity() const -> float;
 
 private:
-    void GenerateRadialGradientTexture();
+    void RebuildMesh(const sf::View& worldView, const sf::Vector2f& playerPos);
+    [[nodiscard]] auto ComputeRingColor(float normalizedDist) const -> sf::Color;
 
-    sf::RenderTexture m_LightMap;
-    sf::Texture m_RadialGradientTexture;
+    sf::VertexArray m_Vertices;
     sf::Color m_AmbientColor{config::ambientDarknessColor};
     sf::Color m_LightColor{config::playerLightColor};
     float m_LightRadius{config::playerLightRadius};
     float m_LightIntensity{1.0f};
     bool m_Enabled{true};
-    bool m_LightMapReady{false};
 };
 } // namespace horde
