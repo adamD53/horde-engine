@@ -427,6 +427,55 @@ void GameState::OnImGuiRender(const DebugUI& debugUI)
             }
         }
 
+        if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            auto enabled = m_LightingSystem.IsEnabled();
+            if (ImGui::Checkbox("Enable Lighting", &enabled))
+            {
+                m_LightingSystem.SetEnabled(enabled);
+            }
+
+            auto radius = m_LightingSystem.GetLightRadius();
+            if (ImGui::SliderFloat("Light Radius", &radius, 10.0f, 1000.0f, "%.1f"))
+            {
+                m_LightingSystem.SetLightRadius(radius);
+            }
+
+            auto intensity = m_LightingSystem.GetLightIntensity();
+            if (ImGui::SliderFloat("Light Intensity", &intensity, 0.0f, 1.0f, "%.2f"))
+            {
+                m_LightingSystem.SetLightIntensity(intensity);
+            }
+
+            const auto ambient = m_LightingSystem.GetAmbientColor();
+            auto ambientColor = std::array<float, 3>{
+                static_cast<float>(ambient.r) / 255.0f,
+                static_cast<float>(ambient.g) / 255.0f,
+                static_cast<float>(ambient.b) / 255.0f};
+            if (ImGui::ColorEdit3("Ambient Color", ambientColor.data()))
+            {
+                m_LightingSystem.SetAmbientColor(sf::Color{
+                    static_cast<uint8_t>(std::clamp(ambientColor[0] * 255.0f, 0.0f, 255.0f)),
+                    static_cast<uint8_t>(std::clamp(ambientColor[1] * 255.0f, 0.0f, 255.0f)),
+                    static_cast<uint8_t>(std::clamp(ambientColor[2] * 255.0f, 0.0f, 255.0f)),
+                    255});
+            }
+
+            const auto light = m_LightingSystem.GetLightColor();
+            auto lightColor = std::array<float, 3>{
+                static_cast<float>(light.r) / 255.0f,
+                static_cast<float>(light.g) / 255.0f,
+                static_cast<float>(light.b) / 255.0f};
+            if (ImGui::ColorEdit3("Player Light Color", lightColor.data()))
+            {
+                m_LightingSystem.SetLightColor(sf::Color{
+                    static_cast<uint8_t>(std::clamp(lightColor[0] * 255.0f, 0.0f, 255.0f)),
+                    static_cast<uint8_t>(std::clamp(lightColor[1] * 255.0f, 0.0f, 255.0f)),
+                    static_cast<uint8_t>(std::clamp(lightColor[2] * 255.0f, 0.0f, 255.0f)),
+                    255});
+            }
+        }
+
         if (ImGui::CollapsingHeader("Performance & Statistics", ImGuiTreeNodeFlags_DefaultOpen))
         {
             const auto& io = ImGui::GetIO();
