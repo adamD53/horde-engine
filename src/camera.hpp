@@ -20,6 +20,7 @@ public:
     void OnResize(const sf::Vector2u& newSize);
     void SetCenterPoint(const sf::Vector2f& centerPoint);
     void SetZoomLevel(float zoomLevel);
+    void ZoomAtPixel(const sf::Vector2i& pixelPos, const sf::RenderWindow& window, float zoomFactor);
     [[nodiscard]] auto GetZoomLevel() const -> float;
     [[nodiscard]] auto GetMaxZoomLevel() const -> float;
     void Update(const sf::Vector2f& targetPosition, float dt);

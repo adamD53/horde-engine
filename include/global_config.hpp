@@ -15,7 +15,7 @@ inline constexpr float shootingDelay = 0.1f;
 inline constexpr float projectileSpeed = 200.f;
 inline constexpr sf::Vector2f playerInitialPosition{536.f, 300.f};
 inline constexpr uint32_t initialEnemyCount = 100;
-inline constexpr uint32_t maxEnemyCount = 10000;
+inline constexpr uint32_t maxEnemyCount = 20000;
 inline constexpr float enemyAttackDamage = 10.0f;
 inline constexpr float minSpawnDistance = 200.f;
 inline constexpr float maxSpawnDistance = 500.f;

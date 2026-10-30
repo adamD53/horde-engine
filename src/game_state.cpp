@@ -521,6 +521,17 @@ void GameState::OnEvent(const sf::Event& event)
         m_Camera->OnResize(resized->size);
         m_PlayerGUI->OnResize(resized->size);
     }
+    else if (const auto* wheelScrolled = event.getIf<sf::Event::MouseWheelScrolled>())
+    {
+        if (m_LevelEditor.GetMode() == ExecutionMode::Edit &&
+            wheelScrolled->wheel == sf::Mouse::Wheel::Vertical &&
+            !ImGui::GetIO().WantCaptureMouse)
+        {
+            constexpr auto zoomStep = 0.1f;
+            const auto zoomFactor = std::pow(1.0f - zoomStep, wheelScrolled->delta);
+            m_Camera->ZoomAtPixel(wheelScrolled->position, m_Window, zoomFactor);
+        }
+    }
     else if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
     {
         if (keyPressed->code == sf::Keyboard::Key::Escape)

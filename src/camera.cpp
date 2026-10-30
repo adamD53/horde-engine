@@ -58,6 +58,14 @@ void Camera::SetZoomLevel(float zoomLevel)
     m_View.setCenter(m_CenterPosition);
 }
 
+void Camera::ZoomAtPixel(const sf::Vector2i& pixelPos, const sf::RenderWindow& window, float zoomFactor)
+{
+    const auto beforeCoord = window.mapPixelToCoords(pixelPos, m_View);
+    SetZoomLevel(m_ZoomLevel * zoomFactor);
+    const auto afterCoord = window.mapPixelToCoords(pixelPos, m_View);
+    SetCenterPoint(m_CenterPosition + (beforeCoord - afterCoord));
+}
+
 auto Camera::GetZoomLevel() const -> float
 {
     return m_ZoomLevel;
