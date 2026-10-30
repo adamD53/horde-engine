@@ -38,11 +38,6 @@ public:
     static constexpr uint32_t s_FrameCount = 3;
     static constexpr float s_FrameDuration = 0.12f;
 
-    static constexpr sf::Vector2f s_HpBarSize{28.f, 4.f};
-    static constexpr float s_HpBarOffsetY = 7.f;
-    static constexpr float s_HpBarOutlineThickness = 1.f;
-    static constexpr sf::Color s_HpBackgroundColor{20, 20, 20};
-
     static constexpr float s_FeetInsetX = 4.f;
     static constexpr float s_FeetHeight = 10.f;
 
@@ -68,15 +63,12 @@ public:
 
 private:
     [[nodiscard]] auto CalculateSeparation() const -> sf::Vector2f;
-    void UpdateHpBar();
     static auto GetTexture() -> const sf::Texture&;
 
 private:
     sf::Sprite m_Sprite;
     Animator<EnemyState, static_cast<size_t>(EnemyState::Count)> m_Animator;
     EnemyState m_CurrentState = EnemyState::FlyDown;
-    sf::RectangleShape m_HpBackgroundBar;
-    sf::RectangleShape m_HpBar;
     float m_Speed = 100.f;
     float m_MaxHealth = s_MaxHealth;
     float m_Health = s_MaxHealth;

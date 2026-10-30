@@ -28,14 +28,6 @@ Enemy::Enemy()
 {
     m_Sprite.setOrigin(s_SpriteOrigin);
 
-    m_HpBackgroundBar.setSize(s_HpBarSize);
-    m_HpBackgroundBar.setFillColor(s_HpBackgroundColor);
-    m_HpBackgroundBar.setOutlineThickness(s_HpBarOutlineThickness);
-    m_HpBackgroundBar.setOutlineColor(sf::Color::Black);
-
-    m_HpBar.setSize(s_HpBarSize);
-    m_HpBar.setFillColor(sf::Color::Green);
-
     m_Animator.AddState(EnemyState::FlyUp, {0, 0, s_FrameCount, s_FrameDuration, true});
     m_Animator.AddState(EnemyState::FlyRight, {1, 0, s_FrameCount, s_FrameDuration, true});
     m_Animator.AddState(EnemyState::FlyDown, {2, 0, s_FrameCount, s_FrameDuration, true});
@@ -68,24 +60,9 @@ void Enemy::Spawn(Entity& target, const sf::Vector2f& spawnPosition, const Terra
 
     m_Sprite.setPosition(spawnPosition);
 
-    m_HpBar.setFillColor(sf::Color::Green);
-
     m_CurrentState = EnemyState::FlyDown;
     m_Animator.Play(EnemyState::FlyDown);
     m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
-    UpdateHpBar();
-}
-
-void Enemy::UpdateHpBar()
-{
-    const auto bounds = GetBounds();
-    const auto hpPos =
-        sf::Vector2f{bounds.position.x + (bounds.size.x - s_HpBarSize.x) * 0.5f, bounds.position.y - s_HpBarOffsetY};
-    m_HpBackgroundBar.setPosition(hpPos);
-    m_HpBar.setPosition(hpPos);
-
-    const auto healthRatio = std::clamp(m_Health / std::max(1.0f, m_MaxHealth), 0.f, 1.f);
-    m_HpBar.setSize({s_HpBarSize.x * healthRatio, s_HpBarSize.y});
 }
 
 auto Enemy::GetFeetBounds() const -> sf::FloatRect
@@ -192,8 +169,6 @@ void Enemy::OnUpdate(float dt)
     m_Animator.Update(dt);
     m_Animator.ApplyToSprite(m_Sprite, s_CellSize, s_SpriteSize);
 
-    UpdateHpBar();
-
     m_AttackTimer += dt;
     if (m_AttackTimer >= s_AttackCooldown && GetBounds().findIntersection(m_Target->GetBounds()))
     {
@@ -205,7 +180,5 @@ void Enemy::OnUpdate(float dt)
 void Enemy::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite, states);
-    // target.draw(m_HpBackgroundBar, states);
-    // target.draw(m_HpBar, states);
 }
 }
