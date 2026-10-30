@@ -298,7 +298,8 @@ void GameState::OnRender(sf::RenderWindow& window)
     m_DepthActors.reserve(1 + activeEnemies.size());
 
     const auto playerBounds = m_Player.GetBounds();
-    m_DepthActors.push_back({&m_Player, playerBounds.position.y + playerBounds.size.y});
+    m_DepthActors.push_back(
+        {.drawable = &m_Player, .enemy = nullptr, .depth = playerBounds.position.y + playerBounds.size.y});
 
     for (const auto& enemyVariant : activeEnemies)
     {
@@ -307,7 +308,7 @@ void GameState::OnRender(sf::RenderWindow& window)
             {
                 const auto bounds = enemy.GetBounds();
                 const auto feetY = bounds.position.y + bounds.size.y;
-                m_DepthActors.push_back({&enemy, feetY});
+                m_DepthActors.push_back({.drawable = nullptr, .enemy = &enemy, .depth = feetY});
             },
             enemyVariant);
     }

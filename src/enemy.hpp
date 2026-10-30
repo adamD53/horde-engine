@@ -60,10 +60,11 @@ public:
     auto IsDead() const -> bool override;
     auto GetHealth() const -> float;
     auto GetMaxHealth() const -> float;
+    void AppendQuad(std::span<sf::Vertex, 6> out) const;
+    static auto GetTexture() -> const sf::Texture&;
 
 private:
     [[nodiscard]] auto CalculateSeparation() const -> sf::Vector2f;
-    static auto GetTexture() -> const sf::Texture&;
 
 private:
     sf::Sprite m_Sprite;

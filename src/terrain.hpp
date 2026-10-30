@@ -40,10 +40,13 @@ struct DepthBatch
     float depth = 0.f;
 };
 
+class Enemy;
+
 struct DepthActor
 {
-    const sf::Drawable* drawable;
-    float depth;
+    const sf::Drawable* drawable = nullptr;
+    const Enemy* enemy = nullptr;
+    float depth = 0.f;
 };
 
 class Terrain : public sf::Drawable, sf::Transformable
@@ -67,6 +70,7 @@ private:
     tinyxml2::XMLDocument m_Document;
     std::vector<Layer> m_Layers;
     std::vector<DepthBatch> m_DepthBatches;
+    mutable std::vector<sf::Vertex> m_ActorBatchVertices;
 
     uint32_t m_MapWidth = 0;
     uint32_t m_MapHeight = 0;

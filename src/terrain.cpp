@@ -1,4 +1,5 @@
 #include "terrain.hpp"
+#include "enemy.hpp"
 #include "static_entity.hpp"
 
 #include <algorithm>
@@ -322,17 +323,49 @@ void Terrain::DrawWithActors(sf::RenderTarget& target, std::span<DepthActor> act
     std::stable_sort(
         actors.begin(), actors.end(), [](const auto& left, const auto& right) { return left.depth < right.depth; });
 
+    m_ActorBatchVertices.clear();
+
+    auto enemyStates = sf::RenderStates{};
+    enemyStates.texture = &Enemy::GetTexture();
+
+    const auto flushEnemyBatch = [&]()
+    {
+        if (!m_ActorBatchVertices.empty())
+        {
+            target.draw(
+                m_ActorBatchVertices.data(),
+                m_ActorBatchVertices.size(),
+                sf::PrimitiveType::Triangles,
+                enemyStates);
+            m_ActorBatchVertices.clear();
+        }
+    };
+
+    const auto processActor = [&](const DepthActor& actor)
+    {
+        if (actor.enemy)
+        {
+            const auto oldSize = m_ActorBatchVertices.size();
+            m_ActorBatchVertices.resize(oldSize + 6);
+            actor.enemy->AppendQuad(std::span<sf::Vertex, 6>{m_ActorBatchVertices.data() + oldSize, 6});
+        }
+        else if (actor.drawable)
+        {
+            flushEnemyBatch();
+            target.draw(*actor.drawable);
+        }
+    };
+
     auto actorIt = actors.begin();
     for (const auto& batch : m_DepthBatches)
     {
         while (actorIt != actors.end() && actorIt->depth < batch.depth)
         {
-            if (actorIt->drawable)
-            {
-                target.draw(*(actorIt->drawable));
-            }
+            processActor(*actorIt);
             ++actorIt;
         }
+
+        flushEnemyBatch();
 
         auto states = sf::RenderStates{};
         states.texture = batch.texture;
@@ -341,12 +374,11 @@ void Terrain::DrawWithActors(sf::RenderTarget& target, std::span<DepthActor> act
 
     while (actorIt != actors.end())
     {
-        if (actorIt->drawable)
-        {
-            target.draw(*(actorIt->drawable));
-        }
+        processActor(*actorIt);
         ++actorIt;
     }
+
+    flushEnemyBatch();
 }
 
 void Terrain::draw(sf::RenderTarget& target, sf::RenderStates states) const

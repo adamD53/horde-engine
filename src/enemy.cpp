@@ -135,6 +135,25 @@ auto Enemy::GetMaxHealth() const -> float
     return m_MaxHealth;
 }
 
+void Enemy::AppendQuad(std::span<sf::Vertex, 6> out) const
+{
+    const auto pos = m_Sprite.getPosition() - s_SpriteOrigin;
+    const auto size = sf::Vector2f{s_SpriteSize};
+    const auto texRect = sf::FloatRect{m_Sprite.getTextureRect()};
+
+    const auto tl = pos;
+    const auto br = pos + size;
+    const auto uvTl = texRect.position;
+    const auto uvBr = texRect.position + texRect.size;
+
+    out[0] = sf::Vertex{tl, sf::Color::White, uvTl};
+    out[1] = sf::Vertex{{br.x, tl.y}, sf::Color::White, {uvBr.x, uvTl.y}};
+    out[2] = sf::Vertex{br, sf::Color::White, uvBr};
+    out[3] = out[0];
+    out[4] = out[2];
+    out[5] = sf::Vertex{{tl.x, br.y}, sf::Color::White, {uvTl.x, uvBr.y}};
+}
+
 void Enemy::OnUpdate(float dt)
 {
     if (!m_Target) return;
