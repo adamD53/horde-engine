@@ -105,7 +105,7 @@
             ]
         },
         {
-            "name": "Wave 4 stress test",
+            "name": "spawn separately stress test",
             "preWaveDelay": 1.0,
             "spawns": [
                 {
@@ -245,6 +245,252 @@
                     },
                     "spawnDelay": 0.0,
                     "spawnInterval": 0.019999999552965164,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                }
+            ]
+        },
+        {
+            "name": "spawn at once stress test",
+            "preWaveDelay": 1.0,
+            "spawns": [
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
+                    "stats": {
+                        "attackDamage": 10.0,
+                        "maxHealth": 100.0,
+                        "moveSpeed": 75.0
+                    },
+                    "type": "Bat"
+                },
+                {
+                    "count": 2000,
+                    "locationMode": "AroundPlayer",
+                    "position": {
+                        "x": 500.0,
+                        "y": 300.0
+                    },
+                    "spawnDelay": 0.0,
+                    "spawnInterval": 0.0,
                     "stats": {
                         "attackDamage": 10.0,
                         "maxHealth": 100.0,

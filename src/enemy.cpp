@@ -94,10 +94,12 @@ auto Enemy::CalculateSeparation() const -> sf::Vector2f
         [&](const sf::Vector2f& peerPos)
         {
             const auto diff = currentPos - peerPos;
-            const auto distance = diff.length();
+            const auto distSq = diff.lengthSquared();
+            constexpr auto radiusSq = s_SeparationRadius * s_SeparationRadius;
 
-            if (distance > 0.001f && distance < s_SeparationRadius)
+            if (distSq > 1e-6f && distSq < radiusSq)
             {
+                const auto distance = std::sqrt(distSq);
                 separation += (diff / distance) * (1.f - (distance / s_SeparationRadius));
             }
         });
@@ -159,13 +161,16 @@ void Enemy::OnUpdate(float dt)
     if (!m_Target) return;
 
     const auto toTarget = m_Target->GetPos() - GetPos();
-    const auto chaseDirection = toTarget.length() > 0.001f ? toTarget.normalized() : sf::Vector2f{0.f, 0.f};
+    const auto toTargetLenSq = toTarget.lengthSquared();
+    const auto chaseDirection =
+        toTargetLenSq > 1e-6f ? (toTarget / std::sqrt(toTargetLenSq)) : sf::Vector2f{0.f, 0.f};
 
     const auto separationForce = CalculateSeparation();
 
     m_Direction = chaseDirection + (separationForce * s_SeparationWeight);
 
-    if (m_Direction.length() > 0.001f)
+    const auto dirLenSq = m_Direction.lengthSquared();
+    if (dirLenSq > 1e-6f)
     {
         if (std::abs(m_Direction.x) > std::abs(m_Direction.y))
         {
@@ -176,7 +181,7 @@ void Enemy::OnUpdate(float dt)
             m_CurrentState = (m_Direction.y > 0.f) ? EnemyState::FlyDown : EnemyState::FlyUp;
         }
 
-        auto movement = m_Direction.normalized() * (dt * m_Speed);
+        auto movement = (m_Direction / std::sqrt(dirLenSq)) * (dt * m_Speed);
         if (m_Terrain)
         {
             movement = m_Terrain->ResolveMovement(GetFeetBounds(), movement);
