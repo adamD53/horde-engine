@@ -3,7 +3,7 @@ bin/
 build/
 /.vs
 .idea/
-.vscode/
+.vscode/*
 .cache/
 .claude/
 CMakeSettings.json

@@ -52,9 +52,9 @@ cmake --build build
 ```
 
 On Windows, CMake can generate Visual Studio projects with
-`-G "Visual Studio 17 2022"`.
+`-G "Visual Studio 18 2026"`.
 
-With Visual Studio 2022 and its C++ workload installed, configure and build
+With Visual Studio 2026 and its C++ workload installed, configure and build
 using the Windows presets:
 
 ```powershell

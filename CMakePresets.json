@@ -28,8 +28,8 @@
     },
     {
       "name": "windows-debug",
-      "displayName": "Windows Debug (Visual Studio 2022)",
-      "generator": "Visual Studio 17 2022",
+      "displayName": "Windows Debug (Visual Studio 2026)",
+      "generator": "Visual Studio 18 2026",
       "architecture": "x64",
       "binaryDir": "${sourceDir}/build/windows-debug",
       "cacheVariables": {
@@ -38,8 +38,8 @@
     },
     {
       "name": "windows-release",
-      "displayName": "Windows Release (Visual Studio 2022)",
-      "generator": "Visual Studio 17 2022",
+      "displayName": "Windows Release (Visual Studio 2026)",
+      "generator": "Visual Studio 18 2026",
       "architecture": "x64",
       "binaryDir": "${sourceDir}/build/windows-release",
       "cacheVariables": {
